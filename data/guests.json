@@ -1,0 +1,53 @@
+[
+  {
+    "slug": "jon-gordon",
+    "name": "Jon Gordon",
+    "title": "Bestselling Author — 'The Energy Bus,' 'Training Camp,' 'The Power of Positive Leadership'",
+    "bio": "Jon Gordon is one of the most sought-after leadership and team culture speakers in the world. His bestselling books have sold millions of copies and have inspired leaders and teams across the NFL, NBA, MLB, college sports, Fortune 500 companies, and education. Jon has worked with the Los Angeles Dodgers, Atlanta Falcons, the Pittsburgh Pirates, Campbell Soup, Northwestern Mutual, Bayer, and West Point Academy.",
+    "links": {
+      "website": "https://jongordon.com"
+    },
+    "defaultTopics": ["leadership", "mindset", "team-dynamics", "mental-performance"]
+  },
+  {
+    "slug": "ken-crenshaw",
+    "name": "Ken Crenshaw",
+    "title": "Former Director of Sports Medicine, Arizona Diamondbacks (2002–2024)",
+    "bio": "Ken Crenshaw spent 22 years as the Director of Sports Medicine and Performance for the Arizona Diamondbacks, including the 2001 World Series Championship team. He has worked with hundreds of MLB players and is recognized as one of the most influential athletic trainers in modern baseball.",
+    "defaultTopics": ["athletic-performance", "leadership", "team-dynamics", "elite-coaching"]
+  },
+  {
+    "slug": "mark-immelman",
+    "name": "Mark Immelman",
+    "title": "PGA Tour Coach, CBS Golf Analyst, Brother of 2008 Masters Champion Trevor Immelman",
+    "bio": "Mark Immelman is one of golf's most respected coaches and on-air analysts. A PGA professional and head men's golf coach at Columbus State University, Mark has coached PGA Tour winners and provides expert analysis for CBS Sports golf telecasts.",
+    "defaultTopics": ["mental-performance", "athletic-performance", "elite-coaching", "sports-psychology"]
+  },
+  {
+    "slug": "chris-streveler",
+    "name": "Chris Streveler",
+    "title": "NFL Quarterback — Arizona Cardinals, New York Jets, CFL Grey Cup Champion",
+    "bio": "Chris Streveler is an NFL quarterback whose career path took him from Division I college football to two CFL Grey Cup Championships with the Winnipeg Blue Bombers before establishing himself in the NFL with the Cardinals, Jets, and other organizations. His path is a case study in resilience, mental performance under uncertainty, and the long road to the highest level.",
+    "defaultTopics": ["mental-performance", "career-transitions", "athletic-performance", "mindset"]
+  },
+  {
+    "slug": "dan-fleyshman",
+    "name": "Dan Fleyshman",
+    "title": "Founder, Angel Investor, Author — Youngest Founder of a Publicly Traded Company in History",
+    "bio": "At 23, Dan Fleyshman became the youngest founder of a publicly traded company in history. He turned a $43,000 college fund into a clothing empire and launched the first-ever zero-sugar, zero-carb, zero-calorie energy drink in 55,000 stores. He went on to build Victory Poker into a top-5 global poker site before personally paying back 41,000 players when the U.S. shut down online poker in 2011, and rebuilt from there. Today he's an angel investor in 40+ companies, has driven $60M+ in influencer marketing, written two bestsellers, and holds a Guinness World Record through his Trina's Kids Foundation toy drive.",
+    "links": {
+      "website": "https://danfleyshman.com"
+    },
+    "defaultTopics": ["entrepreneurship", "leadership", "mindset", "career-transitions"]
+  },
+  {
+    "slug": "ryan-sweeney",
+    "name": "Ryan Sweeney",
+    "title": "CEO, The Inner Game — Former Competitive Tennis Player & Software Entrepreneur",
+    "bio": "Ryan Sweeney is the CEO of The Inner Game, the company building an AI-assisted mental performance coach in partnership with Tim Gallwey — author of the seminal 'The Inner Game of Tennis,' which has shaped the mental approach of athletes from Tom Brady to Billie Jean King. A former competitive tennis player and software entrepreneur, Ryan's work translates Gallwey's Self 1 / Self 2 framework and the performance equation (performance = potential − interference) into a tool athletes, founders, and artists can carry in their pocket.",
+    "links": {
+      "website": "https://theinnergame.com"
+    },
+    "defaultTopics": ["mental-performance", "mindset", "sports-psychology", "entrepreneurship"]
+  }
+]

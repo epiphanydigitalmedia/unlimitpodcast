@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+/*
+  Unlimit Your Potential — Design System (Editorial)
+  ----------------------------------------------------
+  Subject: Mental performance podcast hosted by Seth Pepper.
+  Direction: Editorial. Cool paper background, rich ink text, restrained
+  ink-colored accent used only for wayfinding.
+
+  Family relationship: Sibling property to sethpepper.com (dark, monochrome).
+  Where sethpepper.com is a coaching practice's home (dark, athletic),
+  unlimitpodcast.com is the editorial publication of a podcast (light,
+  considered, content-first). Shared architecture, distinct visual identity.
+
+  Type: Effra (display + body sans) — shared with sethpepper.com for brand
+  consistency. Effra is loaded via Adobe Fonts; Inter via next/font/google
+  serves as the system fallback while Typekit resolves.
+*/
+
+@theme {
+  /* Editorial dark palette — warm near-black canvas, off-white text, lifted
+     teal accent. Distinct from sethpepper.com's cool-blue dark theme by a
+     slightly warmer canvas and the teal (rather than gold) accent. */
+  --color-canvas: #0F1114;        /* Warm near-black background */
+  --color-surface: #181B1F;       /* Elevated surface for cards */
+  --color-ink: #F2F2EE;           /* Warm off-white primary text */
+  --color-stone: #9A9C9E;         /* Mid gray — secondary copy, meta */
+  --color-stone-light: #5E6064;   /* Dimmer gray — timestamps, captions */
+  --color-divider: #262A2F;       /* Hairlines */
+  --color-accent: #6FB5C9;        /* Lifted teal — same hue, used in 2 places only */
+  --color-tag-bg: #1E2126;        /* Topic/guest tag backgrounds */
+
+  /* Typography — Effra (Adobe Fonts) with Inter fallback (Google Fonts) */
+  --font-display: "effra", "Effra", "Inter", system-ui, -apple-system, sans-serif;
+  --font-body: "effra", "Effra", "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Type scale — editorial proportions, generous */
+  --text-hero: clamp(3.5rem, 10vw, 8rem);
+  --text-display: clamp(2.5rem, 6vw, 4.5rem);
+  --text-headline: clamp(1.875rem, 3.5vw, 2.75rem);
+  --text-subheadline: clamp(1.25rem, 2vw, 1.5rem);
+  --text-lede: 1.25rem;
+  --text-eyebrow: 0.75rem;
+
+  /* Letter spacing — serif headlines want slight negative tracking */
+  --tracking-display: -0.02em;
+  --tracking-headline: -0.015em;
+  --tracking-eyebrow: 0.16em;
+
+  /* Layout */
+  --container-tight: 64rem;
+  --container-wide: 80rem;
+  --container-prose: 44rem;
+
+  /* Motion */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@layer base {
+  html {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.55;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  /* Headlines */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: var(--tracking-headline);
+    line-height: 1.06;
+    color: var(--color-ink);
+  }
+
+  em, i {
+    font-style: italic;
+    font-family: inherit;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Eyebrow label — uppercase sans, wide tracking. The editorial section marker. */
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: var(--text-eyebrow);
+    font-weight: 700;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-stone);
+  }
+
+  /* Hairline divider */
+  .hairline {
+    height: 1px;
+    background: var(--color-divider);
+    border: none;
+  }
+
+  /* Focus state */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-canvas);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* The defining display treatment — used for the hero */
+  .display-hero {
+    font-family: var(--font-display);
+    font-size: var(--text-hero);
+    font-weight: 400;
+    letter-spacing: var(--tracking-display);
+    line-height: 0.96;
+  }
+
+  .display-headline {
+    font-family: var(--font-display);
+    font-size: var(--text-headline);
+    font-weight: 700;
+    letter-spacing: var(--tracking-headline);
+    line-height: 1.08;
+  }
+
+  /* Lede paragraph — the editorial intro that follows a headline */
+  .lede {
+    font-family: var(--font-body);
+    font-size: var(--text-lede);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  /* "Latest" tag — accent's first permitted appearance */
+  .tag-latest {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-canvas);
+    background: var(--color-accent);
+    border-radius: 999px;
+  }
+
+  /* Topic / guest tag — neutral, subtle */
+  .tag-meta {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--color-stone);
+    background: var(--color-tag-bg);
+    border-radius: 999px;
+    transition: background 180ms var(--ease-out-quart),
+                color 180ms var(--ease-out-quart);
+  }
+  .tag-meta:hover {
+    background: var(--color-ink);
+    color: var(--color-canvas);
+  }
+
+  /* Primary CTA */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.5rem;
+    background: var(--color-ink);
+    color: var(--color-canvas);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: transform 220ms var(--ease-out-quart),
+                background 220ms var(--ease-out-quart);
+  }
+  .btn-primary:hover {
+    background: var(--color-accent);  /* Accent's second permitted appearance */
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    border-bottom: 1px solid currentColor;
+    transition: opacity 180ms var(--ease-out-quart);
+  }
+  .btn-ghost:hover { opacity: 0.65; }
+
+  /* Article prose styling — for episode show notes and transcripts */
+  .prose-editorial {
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+  .prose-editorial p { margin-bottom: 1.25em; }
+  .prose-editorial h2 {
+    font-family: var(--font-display);
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin: 2.25em 0 0.75em;
+    line-height: 1.15;
+  }
+  .prose-editorial h3 {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin: 1.75em 0 0.5em;
+  }
+  .prose-editorial a {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 180ms var(--ease-out-quart);
+  }
+  .prose-editorial a:hover {
+    color: var(--color-accent);
+  }
+  .prose-editorial blockquote {
+    border-left: 2px solid var(--color-ink);
+    padding-left: 1.25em;
+    margin: 1.5em 0;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+}

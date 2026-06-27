@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "mental-performance",
+    "name": "Mental Performance",
+    "description": "The mental architecture behind sustained elite performance — how high performers train their minds."
+  },
+  {
+    "slug": "pressure-and-stress",
+    "name": "Pressure & Stress",
+    "description": "How elite performers train pressure as an asset rather than an obstacle."
+  },
+  {
+    "slug": "leadership",
+    "name": "Leadership",
+    "description": "What it takes to lead high-performance teams, organizations, and movements."
+  },
+  {
+    "slug": "athletic-performance",
+    "name": "Athletic Performance",
+    "description": "The physical, mental, and tactical disciplines of elite athletic competition."
+  },
+  {
+    "slug": "mindset",
+    "name": "Mindset",
+    "description": "How thought patterns, beliefs, and self-talk shape outcomes under pressure."
+  },
+  {
+    "slug": "team-dynamics",
+    "name": "Team Dynamics",
+    "description": "Culture, chemistry, and the mechanics of high-performing teams."
+  },
+  {
+    "slug": "career-transitions",
+    "name": "Career Transitions",
+    "description": "The mental work of major career shifts — from athletes to executives to creators."
+  },
+  {
+    "slug": "sports-psychology",
+    "name": "Sports Psychology",
+    "description": "Research and applied practice in the psychology of competitive performance."
+  },
+  {
+    "slug": "elite-coaching",
+    "name": "Elite Coaching",
+    "description": "Coaching philosophies, methods, and frameworks at the highest levels of sport and business."
+  },
+  {
+    "slug": "entrepreneurship",
+    "name": "Entrepreneurship",
+    "description": "Founders, builders, and the mindset behind starting and scaling ventures."
+  }
+]
