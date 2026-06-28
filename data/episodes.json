@@ -33,7 +33,9 @@
     "relatedEpisodes": [
       "mark-immelman-on-tour-mindset",
       "chris-streveler-the-long-path"
-    ]
+    ],
+    "guid": "14535966-f66d-4c20-a8d9-9cca12bd1aaf",
+    "audioUrl": "https://anchor.fm/s/11288f500/podcast/play/121958940/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-5-25%2F426784758-44100-2-585f6750d34f4.mp3"
   },
   {
     "number": 6,
@@ -57,7 +59,9 @@
     "resources": [],
     "relatedEpisodes": [
       "jon-gordon-the-energy-bus"
-    ]
+    ],
+    "guid": "e0129d8a-3413-4526-8b71-c795d5d769b2",
+    "audioUrl": "https://anchor.fm/s/11288f500/podcast/play/121577868/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-5-16%2F426275070-44100-2-5430cc127432a.mp3"
   },
   {
     "number": 5,
@@ -78,7 +82,9 @@
     "resources": [],
     "relatedEpisodes": [
       "jon-gordon-the-energy-bus"
-    ]
+    ],
+    "guid": "dc4af286-52ec-4fab-9582-1ffd58243e48",
+    "audioUrl": "https://anchor.fm/s/11288f500/podcast/play/121350098/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-5-11%2F425969722-44100-2-3e04b006fb1e7.mp3"
   },
   {
     "number": 4,
@@ -103,7 +109,9 @@
     "relatedEpisodes": [
       "mark-immelman-on-tour-mindset",
       "ken-crenshaw-on-the-long-game"
-    ]
+    ],
+    "guid": "9d9be2ad-c4fe-4556-b968-302bff24e7df",
+    "audioUrl": "https://anchor.fm/s/11288f500/podcast/play/120913946/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-5-2%2F425387393-44100-2-54fb8ad44e72.mp3"
   },
   {
     "number": 3,
@@ -128,7 +136,9 @@
     "relatedEpisodes": [
       "chris-streveler-the-long-path",
       "ken-crenshaw-on-the-long-game"
-    ]
+    ],
+    "guid": "ae7c74db-c554-4fbe-96ee-8ab5b16aca0b",
+    "audioUrl": "https://anchor.fm/s/11288f500/podcast/play/120581374/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-4-26%2F424942248-44100-2-3cf6bd9c7bf91.mp3"
   },
   {
     "number": 2,
@@ -153,7 +163,9 @@
     "relatedEpisodes": [
       "mark-immelman-on-tour-mindset",
       "jon-gordon-the-energy-bus"
-    ]
+    ],
+    "guid": "9ec4b06b-d51b-4439-a1ce-ac5736c94d02",
+    "audioUrl": "https://anchor.fm/s/11288f500/podcast/play/120291864/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-4-20%2F424558577-44100-2-e97d5731d6ba9.mp3"
   },
   {
     "number": 1,
@@ -188,6 +200,8 @@
     ],
     "relatedEpisodes": [
       "ken-crenshaw-on-the-long-game"
-    ]
+    ],
+    "guid": "23e0dd2a-f947-4ddd-9626-2c8e93bf31a9",
+    "audioUrl": "https://anchor.fm/s/11288f500/podcast/play/119895357/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-4-12%2F424026742-44100-2-07a57568b86d4.mp3"
   }
 ]

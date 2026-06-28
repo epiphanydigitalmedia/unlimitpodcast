@@ -1,133 +1,114 @@
 # CRON.md — Episode auto-sync
 
-This document explains the Spotify-driven episode auto-sync cron. Read this if you're setting it up for the first time, debugging a failed run, or onboarding a new episode workflow.
+A daily Vercel Cron pulls new episodes onto the site automatically. You publish to Spotify-for-Creators; ~24 hours later the new episode appears at unlimitpodcast.com with no code edits.
 
-## What it does
+## How it works
 
-A daily Vercel Cron job runs `/api/cron/sync-episodes` at 14:00 UTC (07:00 Pacific). On each run:
+```
+You publish to Spotify-for-Creators
+        ↓ (Anchor populates RSS within ~1h)
+RSS feed (anchor.fm/.../podcast/rss)
+        ↓
+Daily Vercel Cron (14:00 UTC) — /api/cron/sync-episodes
+        ↓
+  1. Fetches RSS → list of all current episodes
+  2. Fetches https://open.spotify.com/show/<id> in parallel → (title → episodeId) map
+  3. Diffs RSS against data/episodes.json (by RSS <guid>)
+  4. For each new episode:
+       • parses title for known guests → applies their defaultTopics
+       • for solo episodes → applies SOLO_EPISODE_TOPICS constant
+       • for unknown guests → creates a stub guest entry (fill in bio later)
+       • resolves spotifyEpisodeId from the show-page map
+       • populates audioUrl from the RSS enclosure (fallback if no Spotify ID)
+  5. Commits data/episodes.json (+ data/guests.json if stubs added) via GitHub API
+        ↓
+GitHub webhook → Vercel rebuild → episode live on site
+```
 
-1. Fetches the full episode list for the show from the Spotify Web API
-2. Diffs it against `data/episodes.json` in the GitHub repo
-3. For each new episode:
-   - Parses the title for any known guest (matched against `data/guests.json`)
-   - Looks up that guest's `defaultTopics` field — these become the episode's topic tags
-   - If the title contains a name not yet in the roster, creates a **stub guest** with empty bio and empty `defaultTopics` (you fill these in later via Claude Code)
-   - For solo episodes (no guest in title), applies the `SOLO_EPISODE_TOPICS` constant in `lib/episode-sync.ts`
-   - Generates a slug from the title (with the guest name stripped if known)
-   - Pulls the summary, full description, duration, release date, and canonical Spotify episode ID directly from the API
-4. Commits the updated `data/episodes.json` (and `data/guests.json` if stubs were added) via the GitHub API
-5. Vercel's GitHub webhook auto-triggers a production rebuild
-6. New episodes appear on the live site within a few minutes
-
-Net result: publish on Spotify, episode appears on the site within ~24 hours, zero involvement.
+The Spotify scraper is best-effort: if Spotify changes their HTML and our regex misses, the new episode still publishes — it just uses the native HTML5 audio player (built into the SpotifyEmbed component as a fallback) instead of the Spotify iframe until we re-fix the scraper.
 
 ## One-time setup
 
-### 1. Register a Spotify Developer app
-
-- Go to <https://developer.spotify.com/dashboard>, log in with your Spotify account
-- Create app → call it "Unlimit Podcast Cron" → website `https://unlimitpodcast.com` → redirect URIs can be blank (we only use client credentials flow)
-- Save → "Settings" → copy the Client ID and click "View client secret" to copy the secret
-- These go into Vercel env vars: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`
-
-### 2. Create a GitHub fine-grained PAT
-
-- Go to <https://github.com/settings/personal-access-tokens/new>
-- Token name: "unlimit-podcast cron writer"
-- Expiration: 1 year (set a calendar reminder to rotate)
-- Repository access: "Only select repositories" → select the unlimit-podcast repo only
-- Repository permissions:
-  - **Contents**: Read and Write
-  - **Metadata**: Read (auto-selected)
-  - Everything else: No access
-- Generate → copy the token (only shown once)
+### 1. GitHub fine-grained PAT
+- <https://github.com/settings/personal-access-tokens/new>
+- Token name: `unlimit-podcast cron writer`
+- Expiration: 1 year (calendar a renewal reminder)
+- Repository access: *Only select repositories* → `unlimitpodcast` only
+- Repository permissions: **Contents: Read and Write** (Metadata auto-selects)
+- Generate → copy the `github_pat_...` value (only shown once)
 - Vercel env var: `GITHUB_TOKEN`
-- Also set: `GITHUB_REPO=<your-username-or-org>/<repo-name>` and `GITHUB_BRANCH=main`
 
-### 3. Generate the cron secret
-
-Anyone who hits the cron endpoint without the secret gets a 401. Generate a long random string:
-
+### 2. Cron secret
 ```bash
 openssl rand -hex 32
 ```
+Vercel env var: `CRON_SECRET`. Vercel Cron sends this in the `Authorization: Bearer <secret>` header on every scheduled invocation.
 
-Set it as `CRON_SECRET` in Vercel env vars. (Vercel automatically sends this in the `Authorization` header when its own cron triggers the endpoint, so no further config needed on that side.)
+### 3. Vercel env vars
 
-### 4. Set all env vars in Vercel
-
-In Vercel project settings → Environment Variables, add for **Production**, **Preview**, and **Development**:
+In **Project Settings → Environment Variables**, add for **Production / Preview / Development**:
 
 | Variable | Value |
 |---|---|
-| `SPOTIFY_CLIENT_ID` | From step 1 |
-| `SPOTIFY_CLIENT_SECRET` | From step 1 |
+| `RSS_FEED_URL` | `https://anchor.fm/s/11288f500/podcast/rss` |
 | `SPOTIFY_SHOW_ID` | `033fC9vZNYBsByh1MQrpam` |
-| `GITHUB_TOKEN` | From step 2 |
-| `GITHUB_REPO` | e.g., `epiphany/unlimit-podcast` |
+| `GITHUB_TOKEN` | from step 1 |
+| `GITHUB_REPO` | `epiphanydigitalmedia/unlimitpodcast` |
 | `GITHUB_BRANCH` | `main` |
-| `CRON_SECRET` | From step 3 |
+| `CRON_SECRET` | from step 2 |
 
-### 5. Deploy
+> **Note:** earlier versions of this setup required `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`. Those are no longer used — Spotify gated their Web API behind a Premium subscription requirement, so we moved to RSS-based sync + show-page scraping. You can safely delete those two env vars from Vercel if they're still there.
 
-After pushing the cron code, Vercel automatically picks up `vercel.json` and registers the cron schedule. Verify by going to Vercel project → Settings → Cron Jobs — you should see `/api/cron/sync-episodes` scheduled at `0 14 * * *`.
+### 4. Deploy
+After pushing, Vercel auto-picks up `vercel.json` and registers the schedule. Confirm in **Project → Settings → Cron Jobs**.
 
-## Testing the cron manually
-
-To trigger a sync immediately rather than waiting for the daily schedule:
+## Manual trigger / testing
 
 ```bash
-curl -X GET \
-  https://unlimitpodcast.com/api/cron/sync-episodes \
-  -H "Authorization: Bearer <your CRON_SECRET>"
+curl -s https://unlimitpodcast.com/api/cron/sync-episodes \
+  -H "Authorization: Bearer $CRON_SECRET"
 ```
 
 Expected responses:
+- `{"status":"noop", ...}` — no new episodes, nothing to do
+- `{"status":"success", "newEpisodeCount": N, ...}` — N new episodes synced
+- `{"status":"error", "error": "..."}` — something failed; the message tells you what
 
-- `{ "status": "noop", ... }` — no new episodes, nothing to do
-- `{ "status": "success", "newEpisodeCount": N, ... }` — synced N episodes
-- `{ "status": "error", "error": "..." }` — something failed; the error message tells you what
+Logs: Vercel → Functions → `/api/cron/sync-episodes` → Recent invocations.
 
-Logs are in Vercel → Functions → `/api/cron/sync-episodes` → Recent invocations.
+## Maintenance
 
-## Maintenance tasks
-
-### When a new guest's stub is created
-
-The cron will write something like:
-
+### A new guest gets stub-created
+The cron writes:
 ```json
 {
   "slug": "jane-doe",
   "name": "Jane Doe",
   "title": "TODO — fill in guest title",
-  "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
+  "bio": "TODO — ...",
   "defaultTopics": []
 }
 ```
+Edit `data/guests.json` directly (via Claude Code) to fill in `title`, `bio`, optional `links`, and **populate `defaultTopics`** with 2-4 topic slugs from `data/topics.json`. From the next episode forward, this guest's `defaultTopics` will auto-apply. To retroactively tag the current episode, also edit its `topics` array in `data/episodes.json`.
 
-Open `data/guests.json` in Claude Code, fill in `title`, `bio`, optionally `links`, and **populate `defaultTopics`** with 2-4 topic slugs from `data/topics.json`. From the next episode forward, this guest's `defaultTopics` will auto-apply.
+### Add a new topic
+Edit `data/topics.json` to add `{slug, name, description}`. Then update any guest's `defaultTopics` to reference the new slug. Cron applies it on the next sync.
 
-The current episode (the one that triggered the stub creation) will have empty `topics` until you also edit it manually — or, simpler, after filling in `defaultTopics`, just edit the affected episode in `data/episodes.json` and paste in the same topic slugs.
+### The scraper misses a title
+If Spotify changes their HTML, the regex in `lib/spotify-scrape.ts` will start returning fewer matches. Symptoms: new episodes appear on the site with the native audio player instead of the Spotify embed. Fix: update the regex in `lib/spotify-scrape.ts` to match the new structure, then push.
 
-### When you want to add a new topic
-
-Edit `data/topics.json`, add the new topic with a slug, name, and description. Then update any guest's `defaultTopics` to reference the new slug. The cron will start applying it on the next episode.
-
-### When the cron silently misses a guest
-
-The title parser uses exact case-insensitive name matching. If a title says "Mark Immleman" (typo) instead of "Mark Immelman" (correct), the parser won't match. In that case it falls back to the heuristic name extractor and might either correctly extract or skip. The remedy is the same either way: open the affected episode in `data/episodes.json` and manually set its `guests` array to the right slug.
+### The title parser misses a guest
+The parser uses case-insensitive name matching against `data/guests.json`. A typo in the episode title (`Mark Immleman` vs `Mark Immelman`) won't match. Fix manually in `data/episodes.json`.
 
 ## Rotating credentials
 
-- **Spotify**: regenerate the client secret in the Spotify Developer dashboard; update `SPOTIFY_CLIENT_SECRET` in Vercel
-- **GitHub**: PATs expire on the date you set. Rotate before expiration: generate a new fine-grained PAT with the same scopes, update `GITHUB_TOKEN` in Vercel, delete the old PAT
-- **Cron secret**: generate a new random string with `openssl rand -hex 32`, update `CRON_SECRET` in Vercel; Vercel Cron will pick up the new value on next run
+- **GitHub PAT**: regenerate before expiration in https://github.com/settings/personal-access-tokens, update `GITHUB_TOKEN` in Vercel
+- **Cron secret**: `openssl rand -hex 32`, update `CRON_SECRET` in Vercel, redeploy to bust the warm-function env cache
 
 ## Operational notes
 
-- **Cost**: free tier on Vercel (1 cron job, daily), free tier on Spotify Web API (we use a tiny fraction of the rate limit), free tier on GitHub. Total ongoing cost of the cron itself: $0.
-- **Spotify RSS lag**: Spotify-for-Creators-published episodes typically appear in the Web API within 1-3 hours. The daily cron picks them up the next morning UTC. If you publish at 6am UTC on Monday, the episode is on the live site by ~14:30 UTC Tuesday at the latest. Want it faster? Trigger the cron manually via the curl command above immediately after publishing.
-- **Idempotency**: the cron compares Spotify IDs against `data/episodes.json`. Running it twice produces no extra commits if there are no new episodes.
-- **Failure mode**: if any step fails (Spotify API down, GitHub down, token expired), the cron returns 500 and logs to Vercel. No partial state — either the full commit lands or nothing changes.
-- **Disabling temporarily**: rename `vercel.json` to `vercel.json.bak` and redeploy. The cron schedule deregisters. Restore the file and redeploy to re-enable.
+- **Cost**: free across the board (Vercel cron free tier, public RSS, public Spotify show page, GitHub API free tier)
+- **Lag**: Spotify-for-Creators publishes to Anchor's RSS within ~1 hour. Daily cron runs at 14:00 UTC. Worst-case: publish at 14:30 UTC Monday → episode live by ~14:15 UTC Tuesday (~24h). Need faster? Hit the manual curl right after publishing.
+- **Idempotency**: GUID-based diff. Re-running with no new episodes is a no-op (no commit).
+- **Failure mode**: if any step fails, the cron returns 500 with the error message. No partial state.
+- **Disable temporarily**: rename `vercel.json` → `vercel.json.bak`, redeploy.

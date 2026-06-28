@@ -109,7 +109,12 @@ export default async function EpisodePage({ params }: Props) {
       {/* Player */}
       <section className="pb-16">
         <Container width="tight">
-          <SpotifyEmbed episodeId={episode.spotifyEpisodeId} variant="full" />
+          <SpotifyEmbed
+            episodeId={episode.spotifyEpisodeId}
+            variant="full"
+            audioUrl={episode.audioUrl}
+            title={episode.title}
+          />
         </Container>
       </section>
 

@@ -1,15 +1,20 @@
 /**
  * Episode sync orchestration
  * ---------------------------
- * The brain of the cron. Reads current state, fetches Spotify state,
- * computes the diff, builds new episode objects, and writes the merged
- * state back to JSON files via the GitHub API.
+ * The brain of the cron. Reads current state, fetches the RSS feed, computes
+ * the diff, builds new episode objects, and writes the merged state back to
+ * JSON files via the GitHub API.
  *
  * Idempotent: running multiple times with no new episodes is a no-op.
  */
 
-import type { Episode, Guest, Topic } from "./types";
-import { fetchAllShowEpisodes, type SpotifyEpisode } from "./spotify";
+import type { Episode, Guest } from "./types";
+import { fetchRssEpisodes, type RssEpisode } from "./rss";
+import {
+  fetchSpotifyEpisodeMap,
+  resolveSpotifyIdByTitle,
+  type SpotifyEpisodeRef,
+} from "./spotify-scrape";
 import { fetchJsonFile, commitJsonFile } from "./github";
 import {
   findGuestsInTitle,
@@ -20,55 +25,49 @@ import {
 
 const EPISODES_PATH = "data/episodes.json";
 const GUESTS_PATH = "data/guests.json";
-const TOPICS_PATH = "data/topics.json";
 
-/** Topics applied to solo host episodes (no guest in title) */
+/** Topics applied to solo host episodes (no guest in title). */
 const SOLO_EPISODE_TOPICS = ["mental-performance", "mindset", "leadership"];
 
 export type SyncResult = {
   newEpisodeCount: number;
   newGuestCount: number;
-  newEpisodes: Array<{ slug: string; title: string; topics: string[]; guests: string[] }>;
+  newEpisodes: Array<{
+    slug: string;
+    title: string;
+    topics: string[];
+    guests: string[];
+  }>;
   stubGuests: string[];
   errors: string[];
   noop: boolean;
 };
 
-/**
- * Strip HTML from a string. Used to convert Spotify's html_description into
- * plain text for the `summary` field.
- */
+/** Strip HTML tags + decode a few common entities for the plain-text summary. */
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"');
 }
 
-/**
- * Generate a 2-3 sentence summary from a full description.
- * Takes up to ~280 chars or the first 2 sentences, whichever is shorter.
- */
-function generateSummary(description: string): string {
-  const plain = stripHtml(description).trim();
-  // Find sentence boundaries
+/** Pull a short summary (~2 sentences) out of a full description. */
+function generateSummary(html: string): string {
+  const plain = stripHtml(html).trim();
   const sentences = plain.match(/[^.!?]+[.!?]+/g) ?? [plain];
   let summary = "";
   for (const sentence of sentences) {
     if ((summary + sentence).length > 320) break;
     summary += sentence;
-    if (summary.length > 180) break; // 2 short sentences is enough
+    if (summary.length > 180) break;
   }
   return summary.trim() || plain.substring(0, 280) + "…";
 }
 
-/**
- * Given a Spotify episode and current guest roster, derive the topic slugs
- * to apply via the persistent-topics model.
- */
 function deriveTopics(guestSlugs: string[], guests: Guest[]): string[] {
-  if (guestSlugs.length === 0) {
-    // Solo episode
-    return SOLO_EPISODE_TOPICS;
-  }
-  // Union of all matched guests' defaultTopics
+  if (guestSlugs.length === 0) return SOLO_EPISODE_TOPICS;
   const topicSet = new Set<string>();
   for (const slug of guestSlugs) {
     const guest = guests.find((g) => g.slug === slug);
@@ -80,27 +79,25 @@ function deriveTopics(guestSlugs: string[], guests: Guest[]): string[] {
 }
 
 /**
- * Build an Episode object from a Spotify episode + roster context.
- * Mutates the guests array if a stub guest is created.
+ * Build an Episode object from an RSS episode + roster context.
+ * Mutates `guests` if a stub guest is created.
  */
 function buildEpisodeEntry(
-  spotifyEp: SpotifyEpisode,
+  rssEp: RssEpisode,
   guests: Guest[],
   nextNumber: number,
-  stubGuestsAdded: string[]
+  stubGuestsAdded: string[],
+  spotifyRefs: SpotifyEpisodeRef[],
 ): Episode {
-  // 1. Try to match against known guests
-  let guestSlugs = findGuestsInTitle(spotifyEp.name, guests);
+  let guestSlugs = findGuestsInTitle(rssEp.title, guests);
   const knownGuestNames = guests
     .filter((g) => guestSlugs.includes(g.slug))
     .map((g) => g.name);
 
-  // 2. If no known guests matched, try to extract a probable new guest
   if (guestSlugs.length === 0) {
-    const probable = extractProbableGuestName(spotifyEp.name);
+    const probable = extractProbableGuestName(rssEp.title);
     if (probable) {
       const newSlug = slugifyName(probable);
-      // Make sure we're not duplicating an existing slug
       if (!guests.some((g) => g.slug === newSlug)) {
         guests.push({
           slug: newSlug,
@@ -116,28 +113,27 @@ function buildEpisodeEntry(
     }
   }
 
+  const spotifyEpisodeId = resolveSpotifyIdByTitle(rssEp.title, spotifyRefs);
+
   return {
     number: nextNumber,
-    slug: slugifyTitle(spotifyEp.name, knownGuestNames),
-    title: spotifyEp.name,
-    airDate: spotifyEp.release_date,
+    slug: slugifyTitle(rssEp.title, knownGuestNames),
+    title: rssEp.title,
+    airDate: rssEp.releaseDate,
     guests: guestSlugs,
     topics: deriveTopics(guestSlugs, guests),
-    durationSeconds: Math.round(spotifyEp.duration_ms / 1000),
-    spotifyEpisodeId: spotifyEp.id,
-    youtubeVideoId: undefined,
-    summary: generateSummary(spotifyEp.description),
-    showNotes: spotifyEp.html_description,
-    chapters: [], // TODO — parse from description if needed in a future revision
+    durationSeconds: rssEp.durationSeconds,
+    guid: rssEp.guid,
+    audioUrl: rssEp.audioUrl,
+    spotifyEpisodeId,
+    summary: generateSummary(rssEp.descriptionHtml),
+    showNotes: rssEp.descriptionHtml,
+    chapters: [],
     resources: [],
     relatedEpisodes: [],
   };
 }
 
-/**
- * Run the sync. Pulls current data, fetches Spotify, diffs, commits any
- * new episodes back to the repo.
- */
 export async function runSync(): Promise<SyncResult> {
   const result: SyncResult = {
     newEpisodeCount: 0,
@@ -154,70 +150,82 @@ export async function runSync(): Promise<SyncResult> {
     fetchJsonFile<Guest[]>(GUESTS_PATH),
   ]);
 
-  // 2. Fetch all episodes from Spotify
-  const spotifyEpisodes = await fetchAllShowEpisodes();
+  // 2. Fetch RSS feed + Spotify show page in parallel
+  //    (scraper failure shouldn't block sync — fallback to native audio)
+  const [rssEpisodes, spotifyRefs] = await Promise.all([
+    fetchRssEpisodes(),
+    fetchSpotifyEpisodeMap().catch((err) => {
+      result.errors.push(
+        `Spotify scrape failed (will fall back to native audio): ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return [] as SpotifyEpisodeRef[];
+    }),
+  ]);
 
-  // 3. Identify new episodes (by Spotify ID)
-  const existingSpotifyIds = new Set(
+  // 3. Identify new episodes by GUID
+  const existingGuids = new Set(
     episodesFile.content
-      .map((e) => e.spotifyEpisodeId)
-      .filter((id): id is string => Boolean(id))
+      .map((e) => e.guid)
+      .filter((g): g is string => Boolean(g)),
   );
-  const newSpotifyEpisodes = spotifyEpisodes.filter((ep) => !existingSpotifyIds.has(ep.id));
+  const newRssEpisodes = rssEpisodes.filter((ep) => !existingGuids.has(ep.guid));
 
-  if (newSpotifyEpisodes.length === 0) {
+  if (newRssEpisodes.length === 0) {
     result.noop = true;
     return result;
   }
 
-  // 4. Order new episodes from oldest to newest so episode numbers increment correctly
-  newSpotifyEpisodes.sort(
-    (a, b) => new Date(a.release_date).getTime() - new Date(b.release_date).getTime()
+  // 4. Order oldest → newest so episode numbers increment correctly
+  newRssEpisodes.sort(
+    (a, b) =>
+      new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime(),
   );
 
   // 5. Determine starting episode number
-  const maxExistingNumber = Math.max(0, ...episodesFile.content.map((e) => e.number));
+  const maxExistingNumber = Math.max(
+    0,
+    ...episodesFile.content.map((e) => e.number),
+  );
 
   // 6. Build new episode entries (may stub-create new guests)
   const updatedGuests = [...guestsFile.content];
   const newEpisodeEntries: Episode[] = [];
-  for (let i = 0; i < newSpotifyEpisodes.length; i++) {
-    const spotifyEp = newSpotifyEpisodes[i];
+  for (let i = 0; i < newRssEpisodes.length; i++) {
     const entry = buildEpisodeEntry(
-      spotifyEp,
+      newRssEpisodes[i],
       updatedGuests,
       maxExistingNumber + i + 1,
-      result.stubGuests
+      result.stubGuests,
+      spotifyRefs,
     );
     newEpisodeEntries.push(entry);
   }
 
-  // 7. Merge: prepend new episodes so newest-first ordering is preserved
-  //    (we sort by airDate in code, but having JSON in sensible order helps editing)
-  const mergedEpisodes = [...newEpisodeEntries.reverse(), ...episodesFile.content];
+  // 7. Merge: prepend newest so JSON stays newest-first
+  const mergedEpisodes = [
+    ...newEpisodeEntries.slice().reverse(),
+    ...episodesFile.content,
+  ];
 
-  // 8. Commit the updated episodes file
-  const episodeCount = newEpisodeEntries.length;
-  const episodeLabel = episodeCount === 1 ? "episode" : "episodes";
+  // 8. Commit episodes file
+  const epLabel = newEpisodeEntries.length === 1 ? "episode" : "episodes";
   await commitJsonFile(
     EPISODES_PATH,
     mergedEpisodes,
     episodesFile.sha,
-    `cron: add ${episodeCount} new ${episodeLabel} from Spotify`
+    `cron: add ${newEpisodeEntries.length} new ${epLabel} from RSS`,
   );
 
-  // 9. Commit updated guests file if any stub guests were created
+  // 9. Commit updated guests file if any stubs were created
   if (result.stubGuests.length > 0) {
-    // Refetch sha since we may need it (or use the original)
     await commitJsonFile(
       GUESTS_PATH,
       updatedGuests,
       guestsFile.sha,
-      `cron: stub-add ${result.stubGuests.length} new guest(s) — fill in bio + defaultTopics`
+      `cron: stub-add ${result.stubGuests.length} new guest(s) — fill in bio + defaultTopics`,
     );
   }
 
-  // 10. Populate result
   result.newEpisodeCount = newEpisodeEntries.length;
   result.newGuestCount = result.stubGuests.length;
   result.newEpisodes = newEpisodeEntries.map((e) => ({

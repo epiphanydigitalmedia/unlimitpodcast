@@ -2,13 +2,36 @@ type SpotifyEmbedProps = {
   episodeId?: string;
   /** Compact (152px) or full (352px) player height */
   variant?: "compact" | "full";
+  /** Native audio URL — used as a fallback when episodeId is missing
+   *  (e.g. the Spotify scraper hasn't resolved this episode's ID yet). */
+  audioUrl?: string;
+  /** Optional title for accessibility on the fallback <audio>. */
+  title?: string;
 };
 
-export function SpotifyEmbed({ episodeId, variant = "compact" }: SpotifyEmbedProps) {
+export function SpotifyEmbed({
+  episodeId,
+  variant = "compact",
+  audioUrl,
+  title,
+}: SpotifyEmbedProps) {
   if (!episodeId) {
+    if (audioUrl) {
+      return (
+        <div className="w-full rounded-xl bg-[color:var(--color-surface)] border border-[color:var(--color-divider)] p-4">
+          <audio
+            controls
+            preload="metadata"
+            src={audioUrl}
+            aria-label={title ?? "Episode audio"}
+            className="w-full"
+          />
+        </div>
+      );
+    }
     return (
       <div className="w-full bg-[color:var(--color-tag-bg)] rounded-xl p-6 text-center text-[color:var(--color-stone)] text-sm">
-        Spotify embed will appear here once the episode ID is added to the content store.
+        Audio for this episode isn&rsquo;t available yet.
       </div>
     );
   }

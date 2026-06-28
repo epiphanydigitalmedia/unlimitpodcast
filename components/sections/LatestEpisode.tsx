@@ -81,7 +81,12 @@ export function LatestEpisode() {
         </div>
 
         {/* Player */}
-        <SpotifyEmbed episodeId={latest.spotifyEpisodeId} variant="compact" />
+        <SpotifyEmbed
+          episodeId={latest.spotifyEpisodeId}
+          variant="compact"
+          audioUrl={latest.audioUrl}
+          title={latest.title}
+        />
 
         {/* Read more link */}
         <div className="mt-10">

@@ -53,6 +53,13 @@ export type Episode = {
   guests: string[];
   topics: string[];
   durationSeconds: number;
+  /** RSS <guid> — stable unique ID, used by the sync cron to detect new episodes. */
+  guid: string;
+  /** Direct audio URL from the RSS <enclosure>, used as a fallback if the
+   *  Spotify embed isn't available for this episode. */
+  audioUrl: string;
+  /** Spotify episode ID for the embed iframe. Resolved by the cron's
+   *  open.spotify.com scraper; may be absent if the scraper missed. */
   spotifyEpisodeId?: string;
   youtubeVideoId?: string;
   summary: string;
