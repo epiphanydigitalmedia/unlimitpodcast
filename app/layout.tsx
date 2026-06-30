@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { SHOW } from "@/lib/content";
+
+const METRICOOL_HASH = "f22ce66decf45508b659ec5f5f821780";
 
 /*
   Font loading:
@@ -79,6 +82,18 @@ export default function RootLayout({
         <Nav />
         <main>{children}</main>
         <Footer />
+        {/* Metricool tracker — loads after the page is interactive so it
+            doesn't block render. Mirrors the snippet from Metricool's dashboard. */}
+        <Script id="metricool-tracker" strategy="afterInteractive">{`
+          (function(){
+            var s = document.createElement("script");
+            s.type = "text/javascript";
+            s.src = "https://tracker.metricool.com/resources/be.js";
+            s.onload = function(){ beTracker.t({hash: "${METRICOOL_HASH}"}); };
+            s.onreadystatechange = s.onload;
+            document.head.appendChild(s);
+          })();
+        `}</Script>
       </body>
     </html>
   );
