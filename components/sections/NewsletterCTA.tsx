@@ -3,7 +3,7 @@ import { SUBSTACK_URL } from "@/lib/content";
 
 export function NewsletterCTA() {
   return (
-    <section className="py-24 md:py-32">
+    <section className="py-14 md:py-20">
       <Container width="tight">
         <div className="text-center">
           <p className="eyebrow mb-6">The Newsletter</p>

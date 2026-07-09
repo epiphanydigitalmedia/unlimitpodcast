@@ -13,7 +13,7 @@ export function LatestEpisode() {
   const topics = latest.topics.map(getTopicBySlug).filter(Boolean);
 
   return (
-    <section className="py-20 md:py-28 border-y border-[color:var(--color-divider)]">
+    <section className="py-12 md:py-16 border-y border-[color:var(--color-divider)]">
       <Container>
         <div className="flex items-center gap-4 mb-10">
           <span className="tag-latest">

@@ -4,7 +4,7 @@ import { HOST } from "@/lib/content";
 
 export function HostIntro() {
   return (
-    <section className="py-20 md:py-28 bg-[color:var(--color-surface)] border-y border-[color:var(--color-divider)]">
+    <section className="py-12 md:py-16 bg-[color:var(--color-surface)] border-y border-[color:var(--color-divider)]">
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
           <div className="lg:col-span-5">

@@ -8,7 +8,7 @@ export function RecentEpisodes() {
   if (episodes.length === 0) return null;
 
   return (
-    <section className="py-20 md:py-28">
+    <section className="py-12 md:py-16">
       <Container>
         <div className="flex items-end justify-between mb-12">
           <h2 className="display-headline">
