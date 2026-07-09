@@ -84,7 +84,7 @@ export default async function EpisodePage({ params }: Props) {
           )}
 
           {/* Episode title — full editorial display */}
-          <h1 className="font-[family-name:var(--font-display)] text-4xl md:text-5xl lg:text-6xl font-bold tracking-[-0.02em] leading-[1.05]">
+          <h1 className="font-[family-name:var(--font-display)] text-3xl md:text-4xl lg:text-5xl font-bold tracking-[-0.02em] leading-[1.1]">
             {episode.title}
           </h1>
 
