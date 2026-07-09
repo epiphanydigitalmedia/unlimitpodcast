@@ -48,5 +48,25 @@
     "slug": "entrepreneurship",
     "name": "Entrepreneurship",
     "description": "Founders, builders, and the mindset behind starting and scaling ventures."
+  },
+  {
+    "slug": "adhd",
+    "name": "ADHD",
+    "description": "How attention regulation, hyperfocus, and neurodivergence shape performance in elite settings."
+  },
+  {
+    "slug": "addiction",
+    "name": "Addiction",
+    "description": "The mental and behavioral loops behind substance and process addiction — recovery, discipline, and the coach's role."
+  },
+  {
+    "slug": "social-media",
+    "name": "Social Media",
+    "description": "The mental performance cost — and upside — of managing attention and identity in a social-media saturated world."
+  },
+  {
+    "slug": "sleep",
+    "name": "Sleep",
+    "description": "Sleep as the foundation of physical and mental performance — recovery science, chronotypes, and habit design."
   }
 ]
