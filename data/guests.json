@@ -81,10 +81,15 @@
     ]
   },
   {
-    "slug": "learn-to",
-    "name": "Learn To",
-    "title": "TODO — fill in guest title",
-    "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
-    "defaultTopics": []
+    "slug": "rahsaan-lindsey",
+    "name": "Dr. Rahsaan Lindsey",
+    "title": "Triple Board-Certified Adult, Child & Adolescent, and Addiction Psychiatrist; Team Psychiatrist, Arizona Cardinals",
+    "bio": "Dr. Rahsaan Lindsey is a triple board-certified Adult, Child & Adolescent, and Addiction Psychiatrist with 20+ years of practice. Team psychiatrist for the Arizona Cardinals and a veteran of the NFL, NBA, WNBA, and MLB, he's also affiliated with Banner Behavioral Health Hospital and Banner Thunderbird Medical Center, and once served as chief of psychiatric emergency services at GBMC. Beyond elite sports, he treats patients in the addiction unit — including those experiencing homelessness — and gives his time to community mental health work.",
+    "defaultTopics": [
+      "mental-performance",
+      "sports-psychology",
+      "mindset",
+      "pressure-and-stress"
+    ]
   }
 ]
