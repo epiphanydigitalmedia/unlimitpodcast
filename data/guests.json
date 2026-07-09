@@ -7,28 +7,48 @@
     "links": {
       "website": "https://jongordon.com"
     },
-    "defaultTopics": ["leadership", "mindset", "team-dynamics", "mental-performance"]
+    "defaultTopics": [
+      "leadership",
+      "mindset",
+      "team-dynamics",
+      "mental-performance"
+    ]
   },
   {
     "slug": "ken-crenshaw",
     "name": "Ken Crenshaw",
     "title": "Former Director of Sports Medicine, Arizona Diamondbacks (2002–2024)",
     "bio": "Ken Crenshaw spent 22 years as the Director of Sports Medicine and Performance for the Arizona Diamondbacks, including the 2001 World Series Championship team. He has worked with hundreds of MLB players and is recognized as one of the most influential athletic trainers in modern baseball.",
-    "defaultTopics": ["athletic-performance", "leadership", "team-dynamics", "elite-coaching"]
+    "defaultTopics": [
+      "athletic-performance",
+      "leadership",
+      "team-dynamics",
+      "elite-coaching"
+    ]
   },
   {
     "slug": "mark-immelman",
     "name": "Mark Immelman",
     "title": "PGA Tour Coach, CBS Golf Analyst, Brother of 2008 Masters Champion Trevor Immelman",
     "bio": "Mark Immelman is one of golf's most respected coaches and on-air analysts. A PGA professional and head men's golf coach at Columbus State University, Mark has coached PGA Tour winners and provides expert analysis for CBS Sports golf telecasts.",
-    "defaultTopics": ["mental-performance", "athletic-performance", "elite-coaching", "sports-psychology"]
+    "defaultTopics": [
+      "mental-performance",
+      "athletic-performance",
+      "elite-coaching",
+      "sports-psychology"
+    ]
   },
   {
     "slug": "chris-streveler",
     "name": "Chris Streveler",
     "title": "NFL Quarterback — Arizona Cardinals, New York Jets, CFL Grey Cup Champion",
     "bio": "Chris Streveler is an NFL quarterback whose career path took him from Division I college football to two CFL Grey Cup Championships with the Winnipeg Blue Bombers before establishing himself in the NFL with the Cardinals, Jets, and other organizations. His path is a case study in resilience, mental performance under uncertainty, and the long road to the highest level.",
-    "defaultTopics": ["mental-performance", "career-transitions", "athletic-performance", "mindset"]
+    "defaultTopics": [
+      "mental-performance",
+      "career-transitions",
+      "athletic-performance",
+      "mindset"
+    ]
   },
   {
     "slug": "dan-fleyshman",
@@ -38,7 +58,12 @@
     "links": {
       "website": "https://danfleyshman.com"
     },
-    "defaultTopics": ["entrepreneurship", "leadership", "mindset", "career-transitions"]
+    "defaultTopics": [
+      "entrepreneurship",
+      "leadership",
+      "mindset",
+      "career-transitions"
+    ]
   },
   {
     "slug": "ryan-sweeney",
@@ -48,6 +73,18 @@
     "links": {
       "website": "https://theinnergame.com"
     },
-    "defaultTopics": ["mental-performance", "mindset", "sports-psychology", "entrepreneurship"]
+    "defaultTopics": [
+      "mental-performance",
+      "mindset",
+      "sports-psychology",
+      "entrepreneurship"
+    ]
+  },
+  {
+    "slug": "learn-to",
+    "name": "Learn To",
+    "title": "TODO — fill in guest title",
+    "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
+    "defaultTopics": []
   }
 ]
