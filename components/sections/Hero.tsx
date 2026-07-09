@@ -3,7 +3,7 @@ import { SHOW, HOST } from "@/lib/content";
 
 export function Hero() {
   return (
-    <section className="pt-16 md:pt-24 pb-16 md:pb-20">
+    <section className="pt-10 md:pt-16 pb-10 md:pb-14">
       <Container>
         {/* Editorial masthead — small eyebrow above headline */}
         <div className="flex items-center gap-3 mb-10">
