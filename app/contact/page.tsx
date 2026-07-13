@@ -28,7 +28,7 @@ export default function ContactPage() {
             <p className="eyebrow mb-2">Guest Pitches</p>
             <p className="text-2xl font-[family-name:var(--font-display)] mb-2">
               <a
-                href="mailto:guests@unlimitpodcast.com"
+                href="mailto:seth@sethpepper.com?subject=Guest%20Pitch"
                 className="hover:text-[color:var(--color-accent)] transition-colors underline underline-offset-4"
               >
                 guests@unlimitpodcast.com
@@ -46,7 +46,7 @@ export default function ContactPage() {
             <p className="eyebrow mb-2">Partnerships & Sponsorship</p>
             <p className="text-2xl font-[family-name:var(--font-display)] mb-2">
               <a
-                href="mailto:partners@unlimitpodcast.com"
+                href="mailto:seth@sethpepper.com?subject=Partnership%20Inquiry"
                 className="hover:text-[color:var(--color-accent)] transition-colors underline underline-offset-4"
               >
                 partners@unlimitpodcast.com
@@ -58,7 +58,7 @@ export default function ContactPage() {
             <p className="eyebrow mb-2">Press & Media</p>
             <p className="text-2xl font-[family-name:var(--font-display)] mb-2">
               <a
-                href="mailto:press@unlimitpodcast.com"
+                href="mailto:seth@sethpepper.com?subject=Press%20%26%20Media"
                 className="hover:text-[color:var(--color-accent)] transition-colors underline underline-offset-4"
               >
                 press@unlimitpodcast.com
@@ -70,7 +70,7 @@ export default function ContactPage() {
             <p className="eyebrow mb-2">Everything Else</p>
             <p className="text-2xl font-[family-name:var(--font-display)] mb-2">
               <a
-                href="mailto:hello@unlimitpodcast.com"
+                href="mailto:seth@sethpepper.com?subject=General%20Inquiry"
                 className="hover:text-[color:var(--color-accent)] transition-colors underline underline-offset-4"
               >
                 hello@unlimitpodcast.com
