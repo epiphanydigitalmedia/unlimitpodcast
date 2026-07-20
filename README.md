@@ -1,16 +1,15 @@
 # Unlimit Your Potential — Site
 
-Next.js 15 + Tailwind v4 site for unlimitpodcast.com. The audio/video podcast hosted by Seth Pepper, produced by Cupid Soldiers Studios / Epiphany Digital Media.
+Next.js 15 + Tailwind v4 site for **unlimitpodcast.com** — the audio/video podcast hosted by Seth Pepper, produced by Cupid Soldiers Studios / Epiphany Digital Media. Live in production on Vercel.
 
 **Theme:** Editorial light (cool paper background, rich ink text, restrained ink-colored accent)
-**Typography:** Effra (display + body sans via Adobe Fonts, shared with sethpepper.com for brand consistency) with Inter via Google Fonts as the system fallback while Typekit loads
-**Architecture:** Show-first (audience-facing), studio-template (internally — same architecture as sethpepper.com, distinct visual identity)
+**Typography:** Effra (display + body via Adobe Fonts, shared kit with sethpepper.com) with Inter via Google Fonts as the fallback while Typekit loads
 
 ## Quick start
 
 ```bash
 npm install
-cp .env.example .env.local        # then add your Adobe Fonts kit ID and Spotify Show ID
+cp .env.example .env.local        # then fill in the values (see Environment variables)
 npm run dev
 ```
 
@@ -19,11 +18,38 @@ Open <http://localhost:3000>.
 ## Stack
 
 - **Next.js 15** (App Router, React 19, TypeScript)
-- **Tailwind CSS v4** (CSS-first configuration in `app/globals.css`)
-- **Effra** via Adobe Fonts (Typekit) — shared kit with sethpepper.com — with **Inter** via `next/font/google` as system fallback
-- **Spotify embed** for podcast players (iframe-based, no SDK)
+- **Tailwind CSS v4** (CSS-first config in `app/globals.css`)
+- **Effra** via Adobe Fonts (Typekit), **Inter** via `next/font/google` as fallback
+- **react-markdown** + **remark-gfm** — renders episode show notes and transcripts
+- **Spotify embed** for players (iframe, no SDK) with a native `<audio>` fallback
 - **Substack** for newsletter (iframe embed)
-- Zero state management, zero icon libraries, zero CSS-in-JS
+- No state management, no icon libraries, no CSS-in-JS
+
+## How content works
+
+Episodes are **published automatically** — you publish to Spotify-for-Creators and a daily cron pulls the new episode onto the site within ~24h, no code edits (see [Auto-sync cron](#auto-sync-cron)). Here's where each kind of content lives:
+
+| Content | Source | Who maintains it |
+|---|---|---|
+| Episodes | `data/episodes.json` | The cron (auto-added from RSS) |
+| Guests | `data/guests.json` | Cron **stub-creates** new guests; you fill in bio/links/`defaultTopics` |
+| Topics | `data/topics.json` | Hand-edited |
+| Transcripts | `lib/transcripts/<slug>.ts` (markdown-as-string) | Hand-added; merged onto episodes by slug at runtime |
+| Show / host / listen links / Substack | `lib/content.ts` (code) | Hand-edited (stable, rarely changes) |
+
+`lib/content.ts` is the read layer: it imports the `data/*.json` files, merges transcripts by slug, and exposes `getAllEpisodes()`, `getEpisodeBySlug()`, etc. Types live in `lib/types.ts`. Show notes are HTML stored on `episode.showNotes` (from the RSS description), rendered with react-markdown.
+
+## Auto-sync cron
+
+A daily **Vercel Cron** (`14:00 UTC`, configured in `vercel.json`) hits `/api/cron/sync-episodes`:
+
+```
+Publish to Spotify-for-Creators → Anchor RSS → daily cron → diff by GUID →
+add new episodes (+ stub new guests) → resolve Spotify embed IDs (scrape show page) →
+commit data/*.json to GitHub → Vercel rebuild → live
+```
+
+If the Spotify scraper misses an episode's embed ID on publish day (Spotify hadn't indexed it yet), the player falls back to a native `<audio>` bar and the cron **self-heals** it on a later run (backfills any still-missing IDs). Full details, setup, and troubleshooting: **[`docs/CRON.md`](docs/CRON.md)**.
 
 ## Project structure
 
@@ -32,123 +58,64 @@ app/
   layout.tsx             Root layout, fonts, metadata
   page.tsx               Homepage
   globals.css            Design system: tokens, base styles, components
-  about/page.tsx         About the show + host
-  episodes/page.tsx      All episodes archive
-  episodes/[slug]/       Individual episode page (show notes, transcript, player)
-  topics/page.tsx        Topics index
-  topics/[slug]/         Episodes filtered by topic
-  guests/page.tsx        Guests index
-  guests/[slug]/         Guest archive page
-  listen/page.tsx        Subscribe links
-  newsletter/page.tsx    Substack signup
-  sponsor/page.tsx       Sponsorship inquiry
-  press/page.tsx         Press kit
-  contact/page.tsx       Contact routes by inquiry type
+  about|listen|newsletter|sponsor|press|contact/   Static pages
+  episodes/page.tsx      Episode archive       episodes/[slug]/   Episode page (notes, transcript, player)
+  guests/page.tsx        Guest index           guests/[slug]/     Guest archive
+  topics/page.tsx        Topic index           topics/[slug]/     Episodes by topic
+  api/cron/sync-episodes/route.ts   Daily episode-sync cron endpoint
 components/
-  Nav.tsx                Top navigation
-  Footer.tsx             Site-wide footer
-  ui/
-    Container.tsx        Width-constrained container
-    SpotifyEmbed.tsx     Reusable Spotify episode iframe
-  sections/
-    Hero.tsx             Homepage masthead
-    LatestEpisode.tsx    Featured latest episode with player
-    RecentEpisodes.tsx   Earlier episodes list
-    HostIntro.tsx        Seth Pepper as host introduction
-    NewsletterCTA.tsx    Substack signup callout
+  Nav.tsx, Footer.tsx
+  ui/Container.tsx, ui/SpotifyEmbed.tsx
+  sections/              Homepage sections (Hero, LatestEpisode, RecentEpisodes, HostIntro, NewsletterCTA)
+data/
+  episodes.json, guests.json, topics.json     Content source of truth (cron-managed + hand-edited)
 lib/
-  content.ts             Single source of truth for show metadata, episodes, guests, topics
+  content.ts             Read layer: merges data/*.json + transcripts; show/host metadata
   types.ts               Episode/Guest/Topic schemas + date/duration helpers
-  utils.ts               Class-name helper
+  episode-sync.ts        Cron sync logic (runSync)
+  rss.ts                 Anchor RSS parser
+  spotify-scrape.ts      Resolves Spotify episode IDs from the public show page
+  github.ts              Commits data/*.json back to the repo via the GitHub API
+  title-parser.ts        Extracts guests/topics from episode titles
+  transcripts/           Per-episode transcript modules (markdown strings)
 ```
 
-## Setting up Adobe Fonts (Effra)
+## Environment variables
 
-This site reuses the same Adobe Fonts kit as sethpepper.com (kit ID `xgf6ltz`) for brand consistency. Effra serves both display and body type at weights 400 (Regular) and 700 (Bold).
+Copy `.env.example` → `.env.local`. Client vars (`NEXT_PUBLIC_`) are browser-exposed; the rest are server-only (used by the cron).
 
-1. In `.env.local`:
-   ```
-   NEXT_PUBLIC_ADOBE_FONTS_KIT=xgf6ltz
-   ```
-2. In Adobe Fonts project settings for the shared kit, add to the allowed domains:
-   - `localhost`
-   - `unlimitpodcast.com`, `www.unlimitpodcast.com`
-   - `*.vercel.app` (for preview deployments)
+| Variable | Scope | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_ADOBE_FONTS_KIT` | client | Adobe Fonts (Typekit) kit ID for Effra — shared kit `xgf6ltz` |
+| `NEXT_PUBLIC_SUBSTACK_HANDLE` | client | Substack publication handle (default `unlimitpodcast`) |
+| `RSS_FEED_URL` | server | Anchor/Spotify-for-Creators RSS feed the cron reads |
+| `SPOTIFY_SHOW_ID` | server | Public show ID the cron scrapes to resolve embed IDs |
+| `GITHUB_TOKEN` | server | Fine-grained PAT (this repo, Contents R/W) the cron commits with |
+| `GITHUB_REPO` / `GITHUB_BRANCH` | server | Commit target (`epiphanydigitalmedia/unlimitpodcast` / `main`) |
+| `CRON_SECRET` | server | Bearer secret Vercel Cron sends to authorize the endpoint |
 
-Without the kit ID — or if the current domain isn't in the kit's allowlist — the site falls back to Inter for everything. Functional but loses the brand voice.
+## Adobe Fonts (Effra)
 
-## Configuring podcast hosting (Spotify for Creators)
+Reuses the same Adobe Fonts kit as sethpepper.com (kit ID `xgf6ltz`) — Effra at weights 400 and 700. Set `NEXT_PUBLIC_ADOBE_FONTS_KIT=xgf6ltz` in `.env.local`, and ensure `localhost`, `unlimitpodcast.com`, `www.unlimitpodcast.com`, and `*.vercel.app` are in the kit's allowed-domains list. Without it, the site falls back to Inter (functional, off-brand).
 
-1. From your Spotify for Creators dashboard, get:
-   - **Show ID** — the long ID in `open.spotify.com/show/XXXXXXXXXXXX`
-   - **Individual episode IDs** for Episodes 1-4 — the long ID in `open.spotify.com/episode/XXXXXXXXXXXX`
-2. Update `lib/content.ts`:
-   - Set `SPOTIFY_SHOW_ID` in `.env.local` (server-only; used by the episode-sync cron's Spotify scraper)
-   - Set each `spotifyEpisodeId` field on the `EPISODES` array entries
+## Substack newsletter
 
-Embed players will then render via the `SpotifyEmbed` component automatically.
-
-## Configuring the newsletter (Substack)
-
-The publication is at `https://substack.com/@unlimitpodcast`. The embed iframe on `/newsletter` points at `https://unlimitpodcast.substack.com/embed`. If your publication's underlying subdomain is different (Substack sometimes assigns a different one when there's a name collision), update `NEXT_PUBLIC_SUBSTACK_HANDLE` in `.env.local` to match.
-
-For a customized embed (custom colors, copy), go to Substack Settings → Sharing → Embed sign-up form. Copy the iframe URL into the embed src in `app/newsletter/page.tsx`.
+Publication: `https://substack.com/@unlimitpodcast`. The `/newsletter` embed points at `https://unlimitpodcast.substack.com/embed`. If Substack assigned a different subdomain, update `NEXT_PUBLIC_SUBSTACK_HANDLE`.
 
 ## Editing content
 
-**All content lives in `lib/content.ts`.** Single source of truth. Structured for direct mapping to Sanity Studio when CMS is wired in.
+- **New episode** → nothing to do; the cron adds it. To force it immediately, trigger the sync (see `docs/CRON.md` → *Manual trigger*).
+- **Fill in a stub guest** → edit `data/guests.json`: set `title`, `bio`, optional `links`, and `defaultTopics` (2–4 slugs from `data/topics.json`). `defaultTopics` auto-applies to that guest's future episodes.
+- **Add a topic** → add `{slug, name, description}` to `data/topics.json`, then reference it from guests' `defaultTopics`.
+- **Add a transcript** → create `lib/transcripts/<slug>.ts` exporting a default markdown string, and wire it into the map in `lib/content.ts`. (A cleaner file-based publishing flow for notes/transcripts is a known future improvement.)
+- **Show/host/listen links** → edit `lib/content.ts`.
 
-The four content types:
+## Deployment
 
-- `SHOW` — show metadata (name, tagline, description, URL)
-- `HOST` — host bio (short and long versions)
-- `TOPICS` — topic taxonomy. Add new topics here, then tag episodes with their slugs.
-- `GUESTS` — guest bios with title, bio, optional links
-- `EPISODES` — episode data following the schema in `lib/types.ts`
+Deploys are **push-to-main via Vercel's Git integration** — merging to `main` triggers a production build + deploy. The cron is registered automatically from `vercel.json`. Full runbook, env setup, and domain/DNS: **[`DEPLOY.md`](DEPLOY.md)**.
 
-The episode schema includes: number, slug, title, airDate, guests (slug refs), topics (slug refs), durationSeconds, spotifyEpisodeId, youtubeVideoId, summary, showNotes, chapters (timestamp + label), transcript, resources, relatedEpisodes.
+## Not yet built (future)
 
-**TODO items in episode data:**
-- Spotify episode IDs (pull from Spotify for Creators dashboard)
-- Full show notes for Episodes 1-4 (existing content suites have YouTube descriptions, IG carousels, pull quotes — needs assembly into website-quality show notes)
-- Chapter timestamps
-- Full transcripts (if available from existing workflow)
-
-## Deploy to Vercel
-
-```bash
-git init && git add . && git commit -m "Initial build"
-git remote add origin <github-repo-url>
-git push -u origin main
-```
-
-In Vercel: New Project → import the GitHub repo → Vercel auto-detects Next.js. Set these environment variables in project settings:
-
-- `NEXT_PUBLIC_ADOBE_FONTS_KIT`
-- `NEXT_PUBLIC_SUBSTACK_HANDLE` (default: `unlimitpodcast`)
-- `SPOTIFY_SHOW_ID` (server-only)
-
-Add custom domains `unlimitpodcast.com` + `www.unlimitpodcast.com` in project settings.
-
-### DNS — Namecheap → Vercel
-
-| Type  | Host | Value                     |
-|-------|------|---------------------------|
-| A     | @    | `76.76.21.21`             |
-| CNAME | www  | `cname.vercel-dns.com.`   |
-
-SSL provisions automatically.
-
-## Hard rules at launch
-
-1. **Meta-robots must read `index, follow`** (with `max-*` modifiers). Default in `app/layout.tsx` is correct; verify in production via View Source.
-2. **Spotify show must be configured** before launch — placeholder URLs in `LISTEN_PLATFORMS` will 404 if left as-is.
-
-## Intentionally not yet here
-
-- **Sanity Studio.** Content layer is structured to map cleanly to Sanity schemas. Roughly half a day of work when needed.
-- **AI search across the episode library.** V2 feature per the design decisions.
-- **Premium tier / companion resources.** V2 features per the design decisions.
-- **OG image.** Add `public/og-image.jpg` (1200×630) when designed.
-- **Favicon set.** Need a vector source for the show's mark.
-- **Show artwork.** Spotify for Creators requires podcast cover art — when designed, reference it in the show metadata.
+- **Sanity Studio** — the content layer maps cleanly to Sanity schemas when non-technical editing is wanted.
+- **AI search** across the episode library.
+- **File-based show-notes/transcript publishing** — replace the per-transcript TS module + import wiring with markdown files loaded by slug.

@@ -1,118 +1,91 @@
 # DEPLOY.md — Unlimit Your Potential
 
-> Handoff document for the Claude Code instance handling this deployment.
-> Read in full before any action. Confirm each phase boundary with Erik.
+Deployment + operations runbook for **unlimitpodcast.com**. The site is **live** on Vercel with a custom domain and a daily auto-sync cron. This document covers how it deploys now, its configuration, and how to operate it — not a from-scratch launch (that already happened).
 
-## Project context
-
-This is **unlimitpodcast.com** — the website for the *Unlimit Your Potential* podcast, hosted by Seth Pepper. Produced by Cupid Soldiers Studios / Epiphany Digital Media.
-
-- **Stack:** Next.js 15 + Tailwind v4 + TypeScript, editorial light theme
+- **Stack:** Next.js 15 + Tailwind v4 + TypeScript (editorial light theme)
 - **Owner:** Erik Thureson (Epiphany Digital Media)
-- **Hosting target:** Vercel
-- **Domain registrar:** Namecheap (currently unconfigured for production)
-- **Sibling property:** sethpepper.com (dark theme, also Next.js — already deployed via the same pattern)
-- **CMS:** None yet. Content in `lib/content.ts`, structured to map to Sanity Studio in v1.1.
+- **Hosting:** Vercel (Git integration) · **Repo:** `epiphanydigitalmedia/unlimitpodcast` · **Branch:** `main`
+- **Domain:** `unlimitpodcast.com` (registrar: Namecheap) — live
+- **Sibling property:** sethpepper.com (same architecture, dark theme)
 
-## Hard rules
+## How it deploys
 
-1. **Meta-robots tag must read `index, follow`** with `max-*` modifiers on every page. Default in `app/layout.tsx` is correct.
-2. **Do not push or deploy without Erik's explicit confirmation** at each phase boundary.
-3. **No premium tier, no companion resources, no AI search** — these are explicitly v2 features. Do not add them during deploy.
-4. **Spotify show URL must be valid** before pointing the domain at the build — listed URLs in `LISTEN_PLATFORMS` are currently placeholders and will 404.
+**Push to `main` → Vercel builds and deploys.** There is no manual `vercel` CLI step in the normal flow — Vercel's Git integration watches `main`:
 
-## Pre-flight requirements from Erik
+```
+git push origin main → Vercel build → production deploy → live
+```
 
-Before starting Phase 1, you need from Erik:
+This is also how the **cron publishes episodes**: the cron commits `data/*.json` to `main` via the GitHub API, which triggers the same rebuild. See [`docs/CRON.md`](docs/CRON.md).
 
-- Adobe Fonts kit ID containing **Effra** at weights 400 and 700 — reuses the same kit as sethpepper.com (kit ID `xgf6ltz`)
-- Spotify Show ID from his Spotify for Creators dashboard
-- Spotify episode IDs for Episodes 1–4 (Jon Gordon, Ken Crenshaw, Mark Immelman, Chris Streveler)
-- Confirmation that Substack publication at `https://substack.com/@unlimitpodcast` is configured
-- Apple Podcasts, YouTube, Amazon Music URLs once the show is approved on those platforms
-- Confirmation of contact email aliases (`hello@`, `guests@`, `partners@`, `press@` `unlimitpodcast.com`) — may not be set up yet
+> Because every push to `main` deploys to production, treat `main` as production. Confirm intent before pushing.
 
-If any are not yet available, deploy with placeholders and document them as follow-ups. The build renders cleanly with all of these missing; they just produce non-functional links until filled in.
+## Local development
 
-## Phases
+```bash
+npm install
+cp .env.example .env.local     # fill in the values below
+npm run dev                    # http://localhost:3000
+npm run build                  # verify a production build before pushing
+```
 
-### Phase 1 — Local setup and verification
+## Environment variables
 
-1. `npm install`
-2. `cp .env.example .env.local` and populate:
-   - `NEXT_PUBLIC_ADOBE_FONTS_KIT=<kit_id>`
-   - `NEXT_PUBLIC_SUBSTACK_HANDLE=unlimitpodcast` (default already set)
-   - `SPOTIFY_SHOW_ID=<show_id>`
-3. Edit `lib/content.ts`:
-   - Update `LISTEN_PLATFORMS` array — replace `PLACEHOLDER` strings in URLs with actual Spotify/Apple/Amazon URLs
-   - Update each entry in `EPISODES` array — populate `spotifyEpisodeId` with real IDs
-   - Optionally: populate `showNotes`, `chapters`, `transcript` for Episodes 1–4 from existing content suites (this is a content workstream, not a code workstream; can be deferred)
-4. `npm run dev` — verify at `localhost:3000`:
-   - Homepage renders with Hero, Latest Episode, Recent Episodes, Host Intro, Newsletter CTA
-   - Effra is loading (sans-serif body + headings; the "Unlimit" wordmark renders in Effra italic)
-   - Spotify embed renders for the latest episode (if episode ID is set)
-   - All routes navigate without 404: /, /episodes, /episodes/[slug] (test 1–2 episodes), /topics, /topics/[slug], /guests, /guests/[slug], /about, /listen, /newsletter, /sponsor, /press, /contact
-   - Substack iframe loads on /newsletter
-5. `npm run build` — confirm production build succeeds
+Set these in **Vercel → Project Settings → Environment Variables** (Production / Preview / Development) and mirror them in `.env.local` for local work. Client vars (`NEXT_PUBLIC_`) are browser-exposed; the rest are server-only (cron).
 
-**Decision point:** Erik reviews local build. Adjustments before any git activity.
+| Variable | Scope | Value / source |
+|---|---|---|
+| `NEXT_PUBLIC_ADOBE_FONTS_KIT` | client | `xgf6ltz` (shared Effra kit) |
+| `NEXT_PUBLIC_SUBSTACK_HANDLE` | client | `unlimitpodcast` |
+| `RSS_FEED_URL` | server | `https://anchor.fm/s/11288f500/podcast/rss` |
+| `SPOTIFY_SHOW_ID` | server | `033fC9vZNYBsByh1MQrpam` |
+| `GITHUB_TOKEN` | server | Fine-grained PAT — this repo only, **Contents: Read+Write** |
+| `GITHUB_REPO` | server | `epiphanydigitalmedia/unlimitpodcast` |
+| `GITHUB_BRANCH` | server | `main` |
+| `CRON_SECRET` | server | `openssl rand -hex 32` — Vercel Cron sends it as `Authorization: Bearer …` |
 
-### Phase 2 — Git and GitHub
+Creating the PAT and cron secret is documented step-by-step in [`docs/CRON.md`](docs/CRON.md) → *One-time setup*.
 
-6. `git init && git add . && git commit -m "Initial build: unlimitpodcast.com"`
-7. Ask Erik for repo name preference (suggest `unlimit-podcast` or `unlimit-podcast-site`)
-8. If `gh` CLI available: `gh repo create <name> --private --source=. --push`. Otherwise direct Erik to create at <https://github.com/new>, then add remote and push.
+> **Legacy env vars:** `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` are no longer used (Spotify gated its Web API behind Premium; we moved to RSS + show-page scraping). `NEXT_PUBLIC_SPOTIFY_SHOW_ID` is also retired — the code reads server-only `SPOTIFY_SHOW_ID`. Delete all three from Vercel if still present.
 
-**Decision point:** Repo visibility (private/public). Push.
+## The cron
 
-### Phase 3 — Vercel project setup
+A daily Vercel Cron (`0 14 * * *` in `vercel.json`) auto-registers on deploy — confirm under **Project → Settings → Cron Jobs**. To force a sync without waiting for 14:00 UTC:
 
-9. Direct Erik to <https://vercel.com/new> → import the GitHub repo
-10. Before first deploy, set environment variables in Vercel project settings (all three environments: Production, Preview, Development):
-    - `NEXT_PUBLIC_ADOBE_FONTS_KIT`
-    - `NEXT_PUBLIC_SUBSTACK_HANDLE`
-    - `SPOTIFY_SHOW_ID` (server-only — used by the sync cron)
-11. Deploy. Verify the Vercel preview URL renders correctly.
-12. Verify in View Source:
-    - `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">`
-    - Effra CSS is loading from Typekit (look for `<link rel="stylesheet" href="https://use.typekit.net/xgf6ltz.css">`)
+```bash
+curl -s https://unlimitpodcast.com/api/cron/sync-episodes \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
 
-**Decision point:** Erik reviews preview deployment. Last chance to catch issues before DNS cutover.
+Responses: `{"status":"noop"}` (nothing new) · `{"status":"success","newEpisodeCount":N,"backfilledSpotifyIds":M,...}` · `{"status":"error",...}`. Logs: **Vercel → Functions → `/api/cron/sync-episodes`**. Full operational detail in [`docs/CRON.md`](docs/CRON.md).
 
-### Phase 4 — Domain cutover (Namecheap → Vercel)
+## Domain / DNS (Namecheap → Vercel)
 
-This is what takes the site live. Explicit confirmation required.
+Already configured; kept here for reference / disaster recovery.
 
-13. Vercel project settings → Domains → add `unlimitpodcast.com` and `www.unlimitpodcast.com`. Vercel will display the required DNS records.
-14. Namecheap → Domain List → unlimitpodcast.com → Manage → Advanced DNS:
-    - A record, Host `@`, Value `76.76.21.21`
-    - CNAME record, Host `www`, Value `cname.vercel-dns.com.`
-15. Wait for DNS propagation (typically 1–4 hours; use `dig unlimitpodcast.com` to verify). SSL provisions automatically.
+| Type  | Host | Value                   |
+|-------|------|-------------------------|
+| A     | `@`  | `76.76.21.21`           |
+| CNAME | `www`| `cname.vercel-dns.com.` |
 
-**Decision point:** Confirm live domain serves the site.
+Domains `unlimitpodcast.com` + `www.unlimitpodcast.com` are added in Vercel → Domains. SSL provisions automatically.
 
-### Phase 5 — Post-launch verification
+## Post-deploy verification
 
-16. Verify all pages render at the production domain
-17. Check meta-robots in View Source
-18. Run Lighthouse audit. Target: 95+ Performance, 100 Accessibility, 100 Best Practices, 100 SEO.
-19. Submit sitemap to Google Search Console
-
-## Things to flag to Erik
-
-- **Show notes for Episodes 1–4 are placeholder.** The existing content suites have the source material; needs assembly into website-quality show notes. Suggest doing this as a separate content workstream after launch.
-- **No show artwork yet.** Spotify for Creators requires podcast cover art; once designed, reference it in `SHOW.coverArtUrl` (field to be added to the content store).
-- **No OG image.** Social shares will render generic preview. 1200×630 image needed.
-- **Apple Podcasts URL placeholder.** Get from <https://podcasters.apple.com> once the show is approved.
-- **Sanity Studio** for non-technical content editing is structurally ready but not wired. Roughly half a day of work when needed.
+- Production domain serves the latest build; key routes render (`/`, `/episodes`, `/episodes/[slug]`, `/guests`, `/topics`, `/about`, `/listen`, `/newsletter`, `/contact`).
+- View Source shows `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">`.
+- Effra loads from Typekit (`<link ... href="https://use.typekit.net/xgf6ltz.css">`).
+- Newest episode shows the **rich Spotify player** (iframe), not the fallback audio bar — if it shows the bar, its `spotifyEpisodeId` is missing (see Troubleshooting).
 
 ## Troubleshooting
 
-- **Effra not loading** → check `localhost`, `*.vercel.app`, and the production domain are in the `xgf6ltz` kit's allowed domains list
-- **Substack iframe empty** → verify the publication exists at `https://unlimitpodcast.substack.com/embed`. If Substack assigned a different subdomain, update `NEXT_PUBLIC_SUBSTACK_HANDLE`.
-- **Spotify embed shows fallback box** → episode ID not yet set in `lib/content.ts` for that episode. Update and redeploy.
-- **DNS not propagating** → up to 24 hours. <https://www.whatsmydns.net> checks globally.
+- **Newest episode shows the plain audio bar** → its `spotifyEpisodeId` is missing (scraper missed it on publish day). The cron now self-heals on the next run; to fix immediately, set the ID directly in `data/episodes.json` (get it from the episode's Spotify share link) and push, or run the manual cron trigger.
+- **Effra not loading** → confirm `localhost`, `*.vercel.app`, and the production domain are in the `xgf6ltz` kit's allowed domains.
+- **Substack iframe empty** → verify `https://unlimitpodcast.substack.com/embed` exists; if the subdomain differs, update `NEXT_PUBLIC_SUBSTACK_HANDLE`.
+- **Cron returns 401** → `CRON_SECRET` mismatch between the request and Vercel env.
+- **Cron returns 500** → the error message names the failing step (RSS fetch, GitHub commit, etc.); check function logs.
+- **New guest shows placeholder bio** → the cron stub-created it; fill in `data/guests.json` (see `docs/CRON.md` → *Maintenance*).
 
-## Done
+## Rollback
 
-When the live domain serves the new site, all post-launch checks pass, and Erik has signed off on the launch checklist.
+Vercel → Deployments → pick the last-good deployment → **Promote to Production**. (Or revert the offending commit on `main` and push.)
