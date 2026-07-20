@@ -42,7 +42,7 @@ If any are not yet available, deploy with placeholders and document them as foll
 2. `cp .env.example .env.local` and populate:
    - `NEXT_PUBLIC_ADOBE_FONTS_KIT=<kit_id>`
    - `NEXT_PUBLIC_SUBSTACK_HANDLE=unlimitpodcast` (default already set)
-   - `NEXT_PUBLIC_SPOTIFY_SHOW_ID=<show_id>`
+   - `SPOTIFY_SHOW_ID=<show_id>`
 3. Edit `lib/content.ts`:
    - Update `LISTEN_PLATFORMS` array — replace `PLACEHOLDER` strings in URLs with actual Spotify/Apple/Amazon URLs
    - Update each entry in `EPISODES` array — populate `spotifyEpisodeId` with real IDs
@@ -71,7 +71,7 @@ If any are not yet available, deploy with placeholders and document them as foll
 10. Before first deploy, set environment variables in Vercel project settings (all three environments: Production, Preview, Development):
     - `NEXT_PUBLIC_ADOBE_FONTS_KIT`
     - `NEXT_PUBLIC_SUBSTACK_HANDLE`
-    - `NEXT_PUBLIC_SPOTIFY_SHOW_ID`
+    - `SPOTIFY_SHOW_ID` (server-only — used by the sync cron)
 11. Deploy. Verify the Vercel preview URL renders correctly.
 12. Verify in View Source:
     - `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">`

@@ -83,7 +83,7 @@ Without the kit ID — or if the current domain isn't in the kit's allowlist —
    - **Show ID** — the long ID in `open.spotify.com/show/XXXXXXXXXXXX`
    - **Individual episode IDs** for Episodes 1-4 — the long ID in `open.spotify.com/episode/XXXXXXXXXXXX`
 2. Update `lib/content.ts`:
-   - Set `NEXT_PUBLIC_SPOTIFY_SHOW_ID` in `.env.local` (used in metadata)
+   - Set `SPOTIFY_SHOW_ID` in `.env.local` (server-only; used by the episode-sync cron's Spotify scraper)
    - Set each `spotifyEpisodeId` field on the `EPISODES` array entries
 
 Embed players will then render via the `SpotifyEmbed` component automatically.
@@ -126,7 +126,7 @@ In Vercel: New Project → import the GitHub repo → Vercel auto-detects Next.j
 
 - `NEXT_PUBLIC_ADOBE_FONTS_KIT`
 - `NEXT_PUBLIC_SUBSTACK_HANDLE` (default: `unlimitpodcast`)
-- `NEXT_PUBLIC_SPOTIFY_SHOW_ID`
+- `SPOTIFY_SHOW_ID` (server-only)
 
 Add custom domains `unlimitpodcast.com` + `www.unlimitpodcast.com` in project settings.
 
