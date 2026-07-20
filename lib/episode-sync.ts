@@ -32,6 +32,8 @@ const SOLO_EPISODE_TOPICS = ["mental-performance", "mindset", "leadership"];
 export type SyncResult = {
   newEpisodeCount: number;
   newGuestCount: number;
+  backfilledSpotifyIds: number;
+  backfilledSlugs: string[];
   newEpisodes: Array<{
     slug: string;
     title: string;
@@ -138,6 +140,8 @@ export async function runSync(): Promise<SyncResult> {
   const result: SyncResult = {
     newEpisodeCount: 0,
     newGuestCount: 0,
+    backfilledSpotifyIds: 0,
+    backfilledSlugs: [],
     newEpisodes: [],
     stubGuests: [],
     errors: [],
@@ -170,7 +174,24 @@ export async function runSync(): Promise<SyncResult> {
   );
   const newRssEpisodes = rssEpisodes.filter((ep) => !existingGuids.has(ep.guid));
 
-  if (newRssEpisodes.length === 0) {
+  // 3b. Self-healing backfill. The Spotify scraper can miss on publish day
+  // (Spotify hadn't indexed the episode yet), leaving spotifyEpisodeId null.
+  // Since that episode's guid is no longer "new", it would otherwise stay null
+  // forever and fall back to the plain audio player. So every run, re-resolve
+  // any existing episode still missing an ID against the current show page.
+  const backfilledEpisodes = episodesFile.content.map((e) => {
+    if (!e.spotifyEpisodeId && spotifyRefs.length > 0) {
+      const id = resolveSpotifyIdByTitle(e.title, spotifyRefs);
+      if (id) {
+        result.backfilledSpotifyIds++;
+        result.backfilledSlugs.push(e.slug);
+        return { ...e, spotifyEpisodeId: id };
+      }
+    }
+    return e;
+  });
+
+  if (newRssEpisodes.length === 0 && result.backfilledSpotifyIds === 0) {
     result.noop = true;
     return result;
   }
@@ -201,19 +222,29 @@ export async function runSync(): Promise<SyncResult> {
     newEpisodeEntries.push(entry);
   }
 
-  // 7. Merge: prepend newest so JSON stays newest-first
+  // 7. Merge: prepend newest so JSON stays newest-first. Use the backfilled
+  //    copy of existing episodes so any re-resolved Spotify IDs are persisted.
   const mergedEpisodes = [
     ...newEpisodeEntries.slice().reverse(),
-    ...episodesFile.content,
+    ...backfilledEpisodes,
   ];
 
-  // 8. Commit episodes file
-  const epLabel = newEpisodeEntries.length === 1 ? "episode" : "episodes";
+  // 8. Commit episodes file — message reflects new adds and/or backfills
+  const commitParts: string[] = [];
+  if (newEpisodeEntries.length > 0) {
+    const epLabel = newEpisodeEntries.length === 1 ? "episode" : "episodes";
+    commitParts.push(`add ${newEpisodeEntries.length} new ${epLabel} from RSS`);
+  }
+  if (result.backfilledSpotifyIds > 0) {
+    const idLabel =
+      result.backfilledSpotifyIds === 1 ? "Spotify ID" : "Spotify IDs";
+    commitParts.push(`backfill ${result.backfilledSpotifyIds} ${idLabel}`);
+  }
   await commitJsonFile(
     EPISODES_PATH,
     mergedEpisodes,
     episodesFile.sha,
-    `cron: add ${newEpisodeEntries.length} new ${epLabel} from RSS`,
+    `cron: ${commitParts.join(" + ")}`,
   );
 
   // 9. Commit updated guests file if any stubs were created

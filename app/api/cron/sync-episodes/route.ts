@@ -49,6 +49,9 @@ export async function GET(request: Request) {
       `[cron] ${completedAt} — synced ${result.newEpisodeCount} episode(s)` +
         (result.newGuestCount > 0
           ? `, stub-added ${result.newGuestCount} guest(s)`
+          : "") +
+        (result.backfilledSpotifyIds > 0
+          ? `, backfilled ${result.backfilledSpotifyIds} Spotify ID(s): ${result.backfilledSlugs.join(", ")}`
           : "")
     );
     for (const ep of result.newEpisodes) {
