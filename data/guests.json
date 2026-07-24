@@ -99,5 +99,12 @@
     "title": "TODO — fill in guest title",
     "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
     "defaultTopics": []
+  },
+  {
+    "slug": "luis-gonzalez",
+    "name": "Luis Gonzalez",
+    "title": "TODO — fill in guest title",
+    "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
+    "defaultTopics": []
   }
 ]
