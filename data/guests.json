@@ -120,5 +120,12 @@
     "title": "TODO — fill in guest title",
     "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
     "defaultTopics": []
+  },
+  {
+    "slug": "rachel-mc",
+    "name": "Rachel Mc",
+    "title": "TODO — fill in guest title",
+    "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
+    "defaultTopics": []
   }
 ]
