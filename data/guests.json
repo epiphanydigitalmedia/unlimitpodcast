@@ -127,5 +127,12 @@
     "title": "TODO — fill in guest title",
     "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
     "defaultTopics": []
+  },
+  {
+    "slug": "mike-hampton",
+    "name": "Mike Hampton",
+    "title": "TODO — fill in guest title",
+    "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
+    "defaultTopics": []
   }
 ]
