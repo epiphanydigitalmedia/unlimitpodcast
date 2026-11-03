@@ -20,9 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const guest = getGuestBySlug(slug);
   if (!guest) return { title: "Guest not found" };
+  const description =
+    [guest.title, guest.bio].filter(Boolean).join(". ").slice(0, 200) ||
+    `${guest.name} on Unlimit Your Potential with Seth Pepper.`;
   return {
     title: guest.name,
-    description: `${guest.title}. ${guest.bio.slice(0, 160)}`,
+    description,
   };
 }
 
@@ -41,13 +44,17 @@ export default async function GuestPage({ params }: Props) {
           </Link>
           <p className="eyebrow mb-4">Guest</p>
           <h1 className="display-hero mb-6">{guest.name}</h1>
-          <p className="text-xl md:text-2xl font-[family-name:var(--font-display)] italic text-[color:var(--color-stone)] mb-10">
-            {guest.title}
-          </p>
+          {guest.title && (
+            <p className="text-xl md:text-2xl font-[family-name:var(--font-display)] italic text-[color:var(--color-stone)] mb-10">
+              {guest.title}
+            </p>
+          )}
 
-          <div className="prose-editorial">
-            <p>{guest.bio}</p>
-          </div>
+          {guest.bio && (
+            <div className="prose-editorial">
+              <p>{guest.bio}</p>
+            </div>
+          )}
 
           {guest.links?.website && (
             <div className="mt-8">

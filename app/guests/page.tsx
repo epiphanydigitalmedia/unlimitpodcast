@@ -44,12 +44,16 @@ export default function GuestsPage() {
                       {String(guest.count).padStart(2, "0")} {guest.count === 1 ? "ep" : "eps"}
                     </span>
                   </div>
-                  <p className="text-sm text-[color:var(--color-stone)] mb-3">
-                    {guest.title}
-                  </p>
-                  <p className="text-[15px] text-[color:var(--color-ink)]/75 leading-relaxed line-clamp-3">
-                    {guest.bio}
-                  </p>
+                  {guest.title && (
+                    <p className="text-sm text-[color:var(--color-stone)] mb-3">
+                      {guest.title}
+                    </p>
+                  )}
+                  {guest.bio && (
+                    <p className="text-[15px] text-[color:var(--color-ink)]/75 leading-relaxed line-clamp-3">
+                      {guest.bio}
+                    </p>
+                  )}
                 </Link>
               </li>
             ))}

@@ -88,7 +88,23 @@ export const SUBSTACK_URL = "https://substack.com/@unlimitpodcast";
 // ============================================================================
 
 export const TOPICS: Topic[] = topicsData as Topic[];
-export const GUESTS: Guest[] = guestsData as Guest[];
+
+// The episode-sync cron auto-stubs new guests with "TODO — …" placeholders in
+// guests.json, meant to be filled in by a human. Until that happens, never let
+// a raw stub leak to the public site: treat any TODO-prefixed (or empty) field
+// as "not yet provided" so consumers render nothing instead of "TODO — …".
+const isStubField = (value?: string): boolean =>
+  !value || value.trimStart().startsWith("TODO");
+
+function sanitizeGuest(guest: Guest): Guest {
+  return {
+    ...guest,
+    title: isStubField(guest.title) ? "" : guest.title,
+    bio: isStubField(guest.bio) ? "" : guest.bio,
+  };
+}
+
+export const GUESTS: Guest[] = (guestsData as Guest[]).map(sanitizeGuest);
 
 // Merge transcripts onto episodes by slug.
 export const EPISODES: Episode[] = (episodesData as Episode[]).map((e) => {

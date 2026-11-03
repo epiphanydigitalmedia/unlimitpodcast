@@ -71,9 +71,11 @@ export function LatestEpisode() {
                   >
                     {guest.name}
                   </Link>
-                  <p className="mt-1 text-sm text-[color:var(--color-stone)] leading-snug">
-                    {guest.title}
-                  </p>
+                  {guest.title && (
+                    <p className="mt-1 text-sm text-[color:var(--color-stone)] leading-snug">
+                      {guest.title}
+                    </p>
+                  )}
                 </div>
               ) : null
             )}

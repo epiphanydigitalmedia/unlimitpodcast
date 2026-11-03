@@ -98,8 +98,12 @@ export function extractProbableGuestName(title: string): string | null {
 
 function tryExtractName(segment: string): string | null {
   const stripped = segment.replace(HONORIFIC_RE, "");
+  // Unicode-aware so accented names survive (Podkościelny, Li-Liën). Surname
+  // allows internal capitals and apostrophes (McMains, McElreath, O'Brien) and
+  // hyphenation — but never crosses whitespace, so it won't swallow trailing
+  // words like "... on Mindset".
   const match = stripped.match(
-    /^([A-Z][a-z]+)(?:\s+[A-Z]\.?)?\s+([A-Z][a-z]+(?:-[A-Z][a-z]+)?)/,
+    /^(\p{Lu}\p{Ll}+)(?:\s+\p{Lu}\.?)?\s+(\p{Lu}[\p{L}'’]+(?:-\p{Lu}[\p{L}'’]+)?)/u,
   );
   if (!match) return null;
   const first = match[1];
