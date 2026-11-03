@@ -51,6 +51,13 @@ export function Definition({ compact = false }: { compact?: boolean }) {
             no limits, <span className="italic">to unlimit</span> is the act of
             removing them — something you do, not a state you're in.
           </p>
+          <p className="mt-4 text-sm text-[color:var(--color-stone-light)] leading-relaxed max-w-2xl">
+            <span className="italic">Etymology.</span> Back-formation from{" "}
+            <span className="italic">limit</span> (v.) + the prefix{" "}
+            <span className="italic">un-</span> ("to reverse or undo an action"),
+            following the native English pattern of <span className="italic">undo,
+            unlock, unmask, unburden, unfollow</span> — a verb in its own right.
+          </p>
         </>
       )}
     </div>
