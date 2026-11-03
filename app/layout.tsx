@@ -70,7 +70,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    // suppressHydrationWarning: browser extensions (and the Typekit loader)
+    // mutate <html> attributes before React hydrates; this only relaxes
+    // attribute diffing on this one element, not its children.
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body>
         {ADOBE_FONTS_KIT && (
           <link
