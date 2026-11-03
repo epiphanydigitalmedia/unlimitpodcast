@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
+import { Definition } from "@/components/sections/Definition";
 import { NewsletterCTA } from "@/components/sections/NewsletterCTA";
 import { SHOW, HOST } from "@/lib/content";
 
@@ -17,9 +18,12 @@ export default function AboutPage() {
           <h1 className="display-hero mb-10">
             <span className="italic">Unlimit</span> Your Potential.
           </h1>
-          <p className="lede mb-10">{SHOW.description}</p>
+          <p className="lede mb-12">{SHOW.description}</p>
 
-          <div className="prose-editorial mt-12">
+          {/* The word, defined — a verb, the thesis of the show */}
+          <Definition />
+
+          <div className="prose-editorial mt-14">
             <p>
               The podcast was conceived as a long-form conversation series: the kind of
               show where the conversation has the space to reach the parts of performance

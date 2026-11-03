@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { Definition } from "@/components/sections/Definition";
 import { SHOW, HOST } from "@/lib/content";
 
 export function Hero() {
@@ -16,6 +17,11 @@ export function Hero() {
         <h1 className="display-hero max-w-5xl">
           <span className="italic">Unlimit</span> Your Potential.
         </h1>
+
+        {/* Dictionary entry — the headline word is a verb, not a typo */}
+        <div className="mt-8">
+          <Definition compact />
+        </div>
 
         {/* Lede — magazine-style introduction */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
