@@ -58,6 +58,11 @@ export function Definition({ compact = false }: { compact?: boolean }) {
             following the native English pattern of <span className="italic">undo,
             unlock, unmask, unburden, unfollow</span> — a verb in its own right.
           </p>
+          <p className="mt-4 text-sm text-[color:var(--color-stone-light)] leading-relaxed max-w-2xl">
+            <span className="italic">First known use.</span> 2026 — coined for{" "}
+            <span className="italic">Unlimit Your Potential</span> with Seth
+            Pepper, launched May 12, 2026.
+          </p>
         </>
       )}
     </div>
