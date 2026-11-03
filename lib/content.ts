@@ -83,6 +83,17 @@ export const LISTEN_PLATFORMS = [
 
 export const SUBSTACK_URL = "https://substack.com/@unlimitpodcast";
 
+/**
+ * Behind-the-scenes / studio photos for the "From the studio" strip (BTS and
+ * Seth-with-guest shots). Export the chosen frames, drop them into
+ * `public/studio/`, and add an entry here. The strip renders only when at least
+ * one photo is present, so it stays invisible until real photos exist.
+ */
+export const STUDIO_PHOTOS: { src: string; alt: string }[] = [
+  // Example (uncomment once the file exists in public/studio/):
+  // { src: "/studio/seth-recording.jpg", alt: "Seth Pepper recording in the studio" },
+];
+
 // ============================================================================
 // Episodes, guests, and topics — from JSON, mutated by the cron
 // ============================================================================

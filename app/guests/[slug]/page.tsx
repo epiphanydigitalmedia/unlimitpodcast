@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
+import { GuestAvatar } from "@/components/ui/GuestAvatar";
 import {
   GUESTS,
   getGuestBySlug,
@@ -42,7 +43,13 @@ export default async function GuestPage({ params }: Props) {
           <Link href="/guests" className="eyebrow text-[color:var(--color-stone)] hover:text-[color:var(--color-ink)] transition-colors inline-block mb-6">
             ← All Guests
           </Link>
-          <p className="eyebrow mb-4">Guest</p>
+          <p className="eyebrow mb-6">Guest</p>
+          <GuestAvatar
+            name={guest.name}
+            imageUrl={guest.imageUrl}
+            monogramClass="text-5xl"
+            className="w-40 aspect-[4/5] mb-8"
+          />
           <h1 className="display-hero mb-6">{guest.name}</h1>
           {guest.title && (
             <p className="text-xl md:text-2xl font-[family-name:var(--font-display)] italic text-[color:var(--color-stone)] mb-10">

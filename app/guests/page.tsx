@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { GuestAvatar } from "@/components/ui/GuestAvatar";
 import { GUESTS, getEpisodesByGuest } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -36,13 +37,21 @@ export default function GuestsPage() {
             {guestsWithCounts.map((guest) => (
               <li key={guest.slug} className="border-b border-[color:var(--color-divider)] pb-10">
                 <Link href={`/guests/${guest.slug}`} className="block group">
-                  <div className="flex items-baseline justify-between gap-4 mb-3">
-                    <h2 className="text-3xl font-[family-name:var(--font-display)] font-bold tracking-[-0.015em] group-hover:text-[color:var(--color-accent)] transition-colors">
-                      {guest.name}
-                    </h2>
-                    <span className="text-sm font-mono tabular-nums text-[color:var(--color-stone-light)] whitespace-nowrap">
-                      {String(guest.count).padStart(2, "0")} {guest.count === 1 ? "ep" : "eps"}
-                    </span>
+                  <div className="flex items-start gap-4 mb-3">
+                    <GuestAvatar
+                      name={guest.name}
+                      imageUrl={guest.imageUrl}
+                      monogramClass="text-lg"
+                      className="w-14 h-14 shrink-0"
+                    />
+                    <div className="flex items-baseline justify-between gap-4 flex-1 min-w-0">
+                      <h2 className="text-3xl font-[family-name:var(--font-display)] font-bold tracking-[-0.015em] group-hover:text-[color:var(--color-accent)] transition-colors">
+                        {guest.name}
+                      </h2>
+                      <span className="text-sm font-mono tabular-nums text-[color:var(--color-stone-light)] whitespace-nowrap">
+                        {String(guest.count).padStart(2, "0")} {guest.count === 1 ? "ep" : "eps"}
+                      </span>
+                    </div>
                   </div>
                   {guest.title && (
                     <p className="text-sm text-[color:var(--color-stone)] mb-3">
