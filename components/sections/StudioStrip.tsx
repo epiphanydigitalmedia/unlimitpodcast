@@ -21,25 +21,24 @@ export function StudioStrip() {
         <div
           className={
             single
-              ? "relative aspect-[16/9] overflow-hidden bg-[color:var(--color-tag-bg)]"
-              : "grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
+              ? "relative aspect-video overflow-hidden bg-[color:var(--color-tag-bg)]"
+              : "grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4"
           }
         >
-          {photos.map((photo, i) => (
+          {photos.map((photo) => (
             <div
               key={photo.src}
               className={
                 single
                   ? "absolute inset-0"
-                  : `relative aspect-[4/5] overflow-hidden bg-[color:var(--color-tag-bg)] ${
-                      i === 0 ? "col-span-2 lg:col-span-1 aspect-[4/5]" : ""
-                    }`
+                  : "relative aspect-video overflow-hidden bg-[color:var(--color-tag-bg)]"
               }
             >
               <Image
                 src={photo.src}
                 alt={photo.alt}
                 fill
+                sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover"
               />
             </div>

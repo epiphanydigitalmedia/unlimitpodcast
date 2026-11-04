@@ -90,8 +90,8 @@ export const SUBSTACK_URL = "https://substack.com/@unlimitpodcast";
  * one photo is present, so it stays invisible until real photos exist.
  */
 export const STUDIO_PHOTOS: { src: string; alt: string }[] = [
-  // Example (uncomment once the file exists in public/studio/):
-  // { src: "/studio/seth-recording.jpg", alt: "Seth Pepper recording in the studio" },
+  { src: "/studio/studio-interview.jpg", alt: "Seth Pepper recording an interview on the Unlimit Your Potential set" },
+  { src: "/studio/studio-room.jpg", alt: "Behind the scenes in the Unlimit Your Potential studio" },
 ];
 
 // ============================================================================
