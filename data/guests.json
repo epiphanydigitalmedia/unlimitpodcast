@@ -149,5 +149,12 @@
     "title": "Two-Time Olympian Swimmer · NCAA Champion · Swim Coach",
     "bio": "Mariusz Podkościelny is a two-time Olympic swimmer who left communist Poland at 18, swam in two Olympic finals at the 1988 Seoul Games, and won an NCAA title at the University of Arizona. He has coached competitive swimming for nearly four decades.",
     "defaultTopics": []
+  },
+  {
+    "slug": "rocky-larose",
+    "name": "Rocky LaRose",
+    "title": "TODO — fill in guest title",
+    "bio": "TODO — fill in guest bio. This guest was auto-stubbed by the episode-sync cron.",
+    "defaultTopics": []
   }
 ]
